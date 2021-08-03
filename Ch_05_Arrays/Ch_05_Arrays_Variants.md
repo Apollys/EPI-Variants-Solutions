@@ -106,7 +106,7 @@ Clearly there's nothing special about previous versus next, everything is symmet
 
 ---
 
-**The `rand()` function returns a uniformly random number in `[0, RAND_MAX - 1]`. Does `rand() % n` generate a uniform random number in `[0, n - 1]`?
+**The `rand()` function returns a uniformly random number in `[0, RAND_MAX - 1]`. Does `rand() % n` generate a uniform random number in `[0, n - 1]`?**
 
 Only if n divides RAND_MAX, otherwise no.
 
