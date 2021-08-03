@@ -122,8 +122,8 @@ So your best bet is finding the largest value in `[0, m - 1]` that n divides, an
 
 ---
 
----
-
 **Given a uniform random number generator on `[0, 1]`, how would you generate a value from a continuous probability distribution?**
 
 This is a bit of a "gotcha" math question: just use the [CDF](https://en.wikipedia.org/wiki/File:Normal_Distribution_CDF.svg) of the probability distribution, and check where it intersects your randomly distributed `[0, 1]` value.
+
+---
