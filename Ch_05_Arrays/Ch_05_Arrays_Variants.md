@@ -114,7 +114,13 @@ Example: let `RAND_MAX = 5, n = 2`, so given uniform random values in `[0, 4]`, 
 
 `[0, 1, 2, 3, 4]` --> `[0, 1, 0, 1, 0]`
 
-We got one extra zero, so it's not uniform.  The only way we would get the same number is if the number of options we want evenly divides the number of options we are initially given.  This means in general we could make a uniform integer rng for the range `[0, n]` given a uniform integer rng for the range `[0, m]` by finding the least common multiple of n and m, calling the given rng `lcm/m` times, accumulating the sum and then modding by n (should work even with overflow because modular arithmetic is cyclical anyway).
+We got one extra zero, so it's not uniform.  The only way we would get the same number is if the number of options we want evenly divides the number of options we are initially given.
+
+You may try to remedy this by making multiple calls to your rng.  Let's suppose the rng produces uniform values in `[0, n - 1]` and you want uniform random values in `[0, m - 1]`.  What would calling your rng twice give?  You may be tempted to say it will give you `2m` options, but think for a second about rolling two dice: there are 36 possible options.  So calling our rng twice gives m<sup>2</sup> options, which isn't as helpful as we may have hoped.  If n didn't divide m, the odds that it's going to divide m<sup>2</sup>, m<sup>3</sup>, or some higher power of m seems very slim, especially because m is pretty much guaranteed to be a power of two itself in practice.
+
+So your best bet is finding the largest value in `[0, m - 1]` that n divides, and whenever your rng gives you a value larger than this (which will be super rare), you just call the rng again.  Technically not halting, but practically very efficient.
+
+---
 
 ---
 
