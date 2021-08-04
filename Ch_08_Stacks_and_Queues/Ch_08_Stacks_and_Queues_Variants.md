@@ -37,7 +37,7 @@ Of course, whenever we push, we will want to increment the count if the value we
 This is going to be similar to the RPN example given before, except that you will encounter operators first, so your stack will need a way to store both operators and values.  The most natural way is to use strings.
 
 <details>
-<summary>Full code</summary>
+<summary>View full code</summary>
 
 ```c++
 #include <cctype>
@@ -114,7 +114,7 @@ With that in mind, the easiest way to do this is just to keep the current level 
     
 **Return the keys of a binary tree in a bottom-up, left-right order.**
     
-I would just generate a vector of keys in the reversed order (top-down, right-left) and the reverse it.
+I would just generate a vector of keys in the reversed order (top-down, right-left) and then reverse it.
     
 ---
     
