@@ -33,7 +33,7 @@ Of course, whenever we push, we will want to increment the count if the value we
 
 **Polish notation**
 
-This is going to be similar to the RPN example given before, except that you will encounter operators first, so your stack will need a way to store both operators and values.  The most natural way is just to use strings.
+This is going to be similar to the RPN example given before, except that you will encounter operators first, so your stack will need a way to store both operators and values.  The most natural way is to use strings.
 
 <details>
 <summary>Full code</summary>
@@ -94,5 +94,31 @@ int main() {
 </details>
 
 [polish_notation.cpp](https://github.com/Apollys/EPI-Variants-Solutions/blob/main/Ch_08_Stacks_and_Queues/polish_notation.cpp)
+    
+---
+
+**Given a sequence of buildings' heights which you must process in west to east order, return a list of all buildings that have a sunset view.  A building has a sunset view iff the height of all buildings to the west of it are less than its own height.**
+    
+West to east is actually the order we want for this problem.  No data structure required, just track the running maximum, and if the current building's height is greater than the running maximum it has a sunset view.
+    
+---
+    
+**Return the keys of a binary tree in top-down, alternating left-right/right-left order.**
+
+I will first say there's not really any reason to be using queues over normal vectors in this problem.  They're just trying to force some queue practice.
+    
+With that in mind, the easiest way to do this is just to keep the current level and next level in vectors, and whenever you go to push the current level nodes onto the result vector, based on the parity of current_depth (which you track as a single integer), you decide whether or not to reverse the current level nodes.
+    
+---
+    
+**Return the keys of a binary tree in a bottom-up, left-right order.**
+    
+I would just generate a vector of keys in the reversed order (top-down, right-left) and the reverse it.
+    
+---
+    
+**Compute the average of the values at each level of a binary tree.**
+    
+We already know how to generate a list of all the nodes at each level of a binary tree, so this is a trivial extension of that.
     
 ---
