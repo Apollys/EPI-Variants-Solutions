@@ -25,6 +25,7 @@ void pop() {
         _max_stack.pop_back();
     }
     _stack.pop_back();
+}
 ```
     
 Of course, whenever we push, we will want to increment the count if the value we are pushing equals the top value of the max stack.
