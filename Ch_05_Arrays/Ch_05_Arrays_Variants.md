@@ -127,3 +127,23 @@ So your best bet is finding the largest value in `[0, m - 1]` that n divides, an
 This is a bit of a "gotcha" math question: just use the [CDF](https://en.wikipedia.org/wiki/File:Normal_Distribution_CDF.svg) of the probability distribution, and check where it intersects your randomly distributed `[0, 1]` value.
 
 ---
+
+**Spiral Ordering Problems**
+
+Most of these are just reframing the exact same question: can you iterate through a 2D array in spiral order?  So I won't go over them in detail, since the example code already demonstrates how to do that.  However, I will address the one tricky math question:
+
+**Compute the kth element in spiral order for an m x n 2D array in constant time.**
+
+Okay, so first note: this is **not** a programming question since it's asking for a solution in O(1) time.  That means it's a pure math question, since you aren't allowed to wield any of the power of compute programming.  So let's jump straight into the math of it.
+
+First, it may help to think about our 2D array in terms of rings.  If you draw out a picture, you will see that the outermost ring of the 2D array has `2*(m + n) - 4` elements, where the `- 4` comes from the fact that each corner is double counted in both its column and row.  For the next ring in, we remove both the left and right element of the top row, the top and bottom element of the right column, and so on, removing 2\*4 elements in total.  So the second ring has `2*(m + n - 4) - 4` elements, the third ring has `2*(m + n - 8) - 4` elements, and so on.  In general, the ith ring has `2*(m + n - 4*i) - 4` elements, and so the cumulative number of elements up to and including the `r`th ring is the sum of that expression from i = 0 to r - 1, which can be expression in closed form using the fact that sum of i from 0 to n equals `n(n + 1)/2`.  Now we can set k equal to the expression for the total number of elements up to and including the `r`th ring, and solve for r.
+
+Note that we will not get an integer value for r in general unless k is exactly at the end of a ring, but we can simply take the floor of the result and use that as our starting point.  From there, we just have four cases to check (top row, right column, bottom row, left column), which we can go through manually, remembering that `num_rows - 2 * ring_number` will give us the effective num_rows at this ring, and similary for num_columns.
+
+---
+
+**Compute the nth row of Pascal's triangle using O(n) space.**
+
+Computing a given row of Pascal's triangle only requires the one row above it, hence the O(n<sup>2</sup>) space they use in the sample code is superfluous - all we need to track are `previous_row` and `current_row`.
+
+---
