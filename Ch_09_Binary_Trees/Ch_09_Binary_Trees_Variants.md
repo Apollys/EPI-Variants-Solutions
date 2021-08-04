@@ -38,7 +38,7 @@ These questions actually open the door to a very interesting category of problem
 
 The basic idea is to start with a stack to store your recursive function calls.  For example, if we give a super simple example (will look like overkill here) of the factorial function, we have:
 
-```
+```c++
 unsigned int factorial_recursive(unsigned int n) {
     if (n > 1) {
         // Note: intentionally writing this "backwards", i.e. recursive call before multiplication,
@@ -72,7 +72,7 @@ If you imagined that multiplication were not commutative and not associative, pe
 
 But as you start to try to implement recursive functions with multiple calls in different places, you will notice another problem arise that this stack doesn't seem to handle.  Namely, when I return from my recursive function, it knows where in the code to return to automatically, but in the iterative version how do I track that?  For example:
 
-```
+```c++
 int foo_recursive(int value) {
     std::cout << "Start" << std::endl;
     if (value < 10) {
@@ -89,7 +89,7 @@ int foo_recursive(int value) {
 
 How do we translate this to an iterative algorithm that still prints these A's, B's, and C's exactly as they are printed in the recursive version?  We need to keep track of the state ourselves in our stack!  Along with this, we'll introduce the idea of a return value stack, which will make our translation much more general.  It looks something like this:
 
-```
+```c++
 int foo_iterative(int input_value) {
     enum class NextLine { Start, A, B, C };
     std::vector<std::pair<int, NextLine>> call_stack;
