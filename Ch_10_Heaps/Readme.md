@@ -28,3 +28,12 @@ But how about the 100th largest value?  In a sorted array we could index straigh
 
 ---
 
+**Design an online kth largest value algorithm.**
+
+This is the same as the k nearest star example problem before.  We keep track of the k largest values in a min heap (min heap because we need to evict the min of the k+1 largest values to retain the k largest values).
+
+The worst case will occur when we need to perform a full log(k) update on the heap at every step.  Since heap insertion occurs by adding an element at the bottom of the heap and bubbling it up as needed, we can ensure this insertion will take the full log(k) time if the element inserted needs to be the new root node at each step, which means it is the new minimum value, or the new kth largest value of all values seen.  An example of such a sequence for k = 3 could be `[101, 100, 1, 2, 3, 4, 5, ...]`.
+
+It may be the case that any sequence which has Θ(n) updates to the heap will have Θ(n log(k)) time complexity because a significant fraction of the heap pop operations will take full Θ(log(k)) time, but that doesn't seem trivial to prove.
+
+---
