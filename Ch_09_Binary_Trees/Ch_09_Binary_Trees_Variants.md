@@ -148,3 +148,71 @@ Or view as source file: [recursive_iterative_translation.cpp](https://github.com
 
 For implementations of iterative binary tree traversals, see: [iterative_binary_tree_traversals.cpp](https://github.com/Apollys/EPI-Variants-Solutions/blob/main/Ch_09_Binary_Trees/iterative_binary_tree_traversals.cpp)  However, I would **highly recommend** making sure you understand the above translation code first, as it is more focused on what's important (i.e. not cluttered by the plumbing details of binary tree traversal) and it offers a great understanding of the more general problem we are tackling here.
         
+---
+
+**Preorder and postorder traversals with constant space, given nodes have parent pointers.**
+
+These are going to be very similar to the inorder traversal, but the point when you save the current node's value to your result vector will be different.  This is more an exercise in plumbing that algorithm design, so I don't think there's much value in going into detail here.
+
+---
+
+**Binary tree reconstructions from two traversal sequences.**
+
+This is actually quite an interesting question, and here I will discuss the theory behind all possible combinations of sequences.
+
+Let's use the following general notation for our sequences:
+ - Preorder traversal sequence: `[x_0, x_1, x_2, ..., x_n-1]`
+ - Inorder traversal sequence: `[y_0, y_1, y_2, ..., y_n-1]`
+ - Postorder traversal sequence: `[z_0, z_1, z_2, ..., z_n-1]`
+
+**Preorder and inorder:**
+
+So we are given `[x_0, x_1, x_2, ..., x_n-1]`and `[y_0, y_1, y_2, ..., y_n-1]`.  From this we can deduce that `x_0` is the root of the tree, since it is the first element in the preorder traversal.  We can then find `x_0` in the inorder traversal sequence, i.e. find `y_i = x_0`.  Then we know the inorder traversal sequences of the left and right subtrees are `[y_0, ..., y_i-1]` and `[y_i+1, ..., y_n-1]` respectively.  Finally, we know that the lengths of the preorder traversal sequences must match those of the inorder traversal sequences, so the preorder traversal sequences for left and right subtrees are `[x_1, ..., x_n-1]` partitioned by lengths of the respective inorder traveral sequences.
+
+Now that we have obtained the preorder and inorder traversal sequences of the left and right subtrees, we can just recurse on each subtree.
+
+**Inorder and postorder:**
+
+Here we are given `[y_0, y_1, y_2, ..., y_n-1]` and `[z_0, z_1, z_2, ..., z_n-1]`.  From the postorder sequence we know the root is `z_n-1`.  As before, we can now find the `y_i = z_n-1` that partitions the inorder sequence into left and right subtree inorder sequences.  Finally, the lengths of those sequences tell us where to partition the postorder sequences.  As before, having determined the corresponding sequences for the left and right subtrees, we can now recurse on left and right subtrees and we're done.
+
+**Preorder and postorder:**
+
+In this case we are given `[x_0, x_1, x_2, ..., x_n-1]` and `[z_0, z_1, z_2, ..., z_n-1]`.  We know that `x_0` is the root from the first sequence, and `z_n-1` is the root from the second sequence (they must be the same value).  However, for the remaining part of the sequence, it's not immediately obvious how to partition it into left and right subtree sequences.  Let's look at a simple 7-node binary tree:
+
+```
+       1
+     /   \
+   2       3
+  / \     / \
+ 4   5   6   7
+
+Preorder:  [1, 2, 4, 5, 3, 6, 7]
+Postorder: [4, 5, 2, 6, 7, 3, 1]
+```
+Here we can see that we could search for the matching continguous blocks within the preorder sequences (excluding first value) and postorder (excluding last value): `[2, 4, 5]` matches `[4, 5, 2]`, and `[3, 6, 7]` matches `[6, 7, 3]`.  Note that our definition of matching here is just that they contain the same values ignoring order.  (You could think of it as set equality, but for sets that allow repeated elements.)
+
+You may be thinking: this doesn't seem very efficient.  And you would be right.  There's a flash of insight that can eliminate this matching problem entirely. Look back at the sequences again: just from the sequences, what are the roots of the left and right subtrees?  Is there any way those can be used to partition the traversal sequences?
+
+The root of the left subtree (2 in this case) will always be the second element in the preorder traversal.  Symmetrically, the root of the right subtree (3 here) will always be the second to last element of the postorder traversal.  But now observe where the 2 is in the postorer traversal, and where the 3 is in the preorder traversal.  The 2 in the postorder traversal marks the end of the left subtree postorder traversal - this is no accident, this is by definition!  Symmetrically, the 3 in the preorder traversal marks the start of the right subtree preorder traversal.  This allows us to bypass the matching problem and partition the traveral sequences directly.
+
+However, whether we use the left/right subtree root method, or try to find matching blocks, we don't always get a clear answer.  Consider the following case:
+
+```
+Preorder:  [1, 2]
+Postorder: [2, 1]
+```
+So the root is 1, and are left and right subsequence blocks are `[2]` and `[]`, but which is left and which is right?  There's no way to know actually, it's completely ambiguous.  The following trees both have these traversal sequences:
+
+```
+   1      1
+  /        \
+ 2          2
+ ```
+ 
+Therefore, an additional necessary condition on our sequences to remove ambiguity is that if a node has one child, it must have two children.  In other words, no node may have exactly one child.  Alternatively, you could allow single children, but assume that any lone child is always a left child.
+
+With this ambiguity out of the way, we once again have extracted the corresponding sequences for left and right subtrees, and thus reduced the problem into two more recursive instances of itself.  So recurse on left and right subtrees and we are done.
+
+---
+
+**Construct max tree in linear time.**
