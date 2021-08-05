@@ -216,3 +216,41 @@ With this ambiguity out of the way, we once again have extracted the correspondi
 ---
 
 **Construct max tree in linear time.**
+
+There's not really any trick here - write out a random sequence of numbers and add these numbers to the tree one at a time.  Pay careful attention to how you would add the next node given that you're tracking the position of the most recently added node.  For example, if the new value is less than the most recently added node, you can just add it as a right child.  Otherwise you need to insert it above the most recently added value, and make the most recently added value its left child.  However, in general you may not just need to go one step up, you will need to go up until you find a node whose parent is not greater than the value you are inserting (or which has no parent, which would be the case if the value to be inserted is the new maximum).  Finally, you make the node you are replacing the left child of the inserted node.
+
+At first glance, the time complexity of this algorithm may not seem linear, because we have to "go up until we find a node with X property" on every step of the insertion.  And this "going up" action seems it could potentially take O(height) time, and since this tree has no guarantees about balance, that would be O(n), so wouldn't the entire runtime be O(n<sup>2</sup>)?
+
+Well, it is correct that one step of the algorithm could be O(n).  But after that step occurs, we're back at the top of the tree, so we can't have another O(n) step right away.  Specifically, we can only go up as much as we've gone down, and we can only go down by 1 step per insertion, so throughout the entire insertion of n elements, we can only take up to O(n) steps down, and thus up to O(n) steps up.
+
+This teaches us an important lesson to analyze time complexity holistically when given this sort of question.  When you think something like, "wait, but a single iteration could take O(n) or O(h) time already, so this whole algorithm can't possible still be O(n) time", pause and ask yourself two questions: *1) But is there a reason this can't happen very often?* and *2) Is there a way I can count the total number of operations that happens in the full algorithm, rather than focusing on a single iteration?*  For example, we will commonly see algorithms where, at each iteration we push an element onto a stack (or other data structure), but then run a loop to pop elements off that stack until some condition is met.  A single iteration may require n pops, but a holistic view easily shows that the algorithm is O(n) time in its entirety: we process n elements, each of which is pushed to the stack once and popped from the stack (at most) once, so there are only n pushes and n pops in total.
+
+---
+
+**Reconstruct a binary tree from the postorder traversal sequence with null markers for nullpointer children.**
+
+The symmetry between pre- and post-order traversal sequences is very strong, any algorithm with one can be converted to the other by working through the sequence in the opposite direction.  (The root is the first element in a preorder traversal and the last element in a postorder traversal.)
+
+---
+
+**Can the binary tree be reconstructed from an inorder traversal sequence with null child node markers?**
+
+No, all you have to do is start writing out a few examples and you'll realize that no matter what shape you make the tree, you'll always get a sequence of the form `[null, a, null, b, null, c, null, d, null, e, null, ...]`.  Inorder sequences give us no information about the root of the tree, and the null markers can't help us resolve that ambiguity in this case.
+
+---
+
+**Compute the right sibling of each node in a perfect binary tree, and save the result in the right child node.**
+
+The only trick here is that we won't have direct access to a node's right child after saving its right sibling in the right child pointer.  However, since we are assuming a perfect binary tree, the right child is just the left child's right sibling, so we actually do always have convenient access to it: if the right child pointer has not yet been updated, then the right child pointer gives us the right child, otherwise the left child's right sibling gives us the right child.  Other than that, the idea is the same as that in the example.
+
+---
+
+**Compute the right sibling of each node in a general binary tree.**
+
+I'm assuming for this question that we do have a right sibling pointer, as it seems unnecessarily messy and pointless to overwrite our right child pointers with the right siblings.
+
+To focus in on the problem of a general binary tree, now we have to worry about the fact that even if a node is a left child, its parent may not have a right child.  And its parent's right sibling may not have a left child, or a right child.  But assuming we've already computed the right siblings of all nodes above the level we're currently processing, the right sibling of the current node must be a child of the current node's parent, or parent's right sibling, or parent's right sibling's right sibling, or (and so on)...  So we can use the parent's right sibling chain to find the current node's right sibling.
+
+This may seem like another case of doing too many things in one step of the algorithm to yield O(n) time complexity for the entire process, but remember these steps right that we're taking via the parent's right sibling chain represent "permanent forward progress", in that we will never walk backwards to the left and repeat these steps.  So throughout the entire course of the algorithm, we can only take O(n) such rightward steps.
+
+---
