@@ -163,15 +163,15 @@ What will be more efficient, splitting into two problems of similar sizes, or in
 
 ```
 Rings -- Moves
-2	------ 3
-3	------ 7
-4	------ 15
-5	------ 31
-6	------ 63
-7	------ 127
-8	------ 255
-9	------ 511
-10	---- 1023
+2 ------ 3
+3 ------ 7
+4 ------ 15
+5 ------ 31
+6 ------ 63
+7 ------ 127
+8 ------ 255
+9 ------ 511
+10 ----- 1023
 ```
 
 As we can see, the function for the optimal number of moves is certainly superlinear - it's exponential in fact.  The exact formula is just num_moves = 2<sup>n</sup> - 1.  So we want the most balanced division of subproblem size for an optimal solution to the 4 peg problem.
