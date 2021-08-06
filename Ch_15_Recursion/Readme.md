@@ -131,7 +131,7 @@ This is exactly the same as the original Towers of Hanoi problem, if you think o
 
 ---
 
-**Towers of Hanoi - 2n disks, n white and n black.  Black on top of white is allowed, white on top of black is not allowed.  Clarifying assumption: each ring is a different size, and the normal rules of Towers of Hanoi also apply here (the book's working of this problem is rather vague).*
+**Towers of Hanoi - 2n disks, n white and n black.  Black on top of white is allowed, white on top of black is not allowed.  Clarifying assumption: each ring is a different size, and the normal rules of Towers of Hanoi also apply here (the book's working of this problem is rather vague).**
 
 Let's first think about what the problem condition entails: "You cannot place a white disk directly on top of a black disk."  This means that as soon as we place a black disk on a pole, there can never be *any* white disks on top of it.  So the initial configuration will be n white disks on the bottom, and n black disks on top.
 
