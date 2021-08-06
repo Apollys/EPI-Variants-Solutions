@@ -24,6 +24,6 @@ This lends itself to designing a recursive algorithm.  If we knew all the possib
 
 Note that this is going to lend itself to a solution size that explodes exponentially, but that's the nature of the problem (once again, it's one of those "find all the answers" questions).  And like I said, the implementation details of tracking all the sequences and picking all the pairs and interleaving them all does get a little messy, so if you understand the algorithm and aren't interested in implementing it yourself, that's perfectly sensible.
 
-If interested, here's my code for this problem: [[binary_search_tree_sequences.cpp](https://github.com/Apollys/EPI-Variants-Solutions/blob/main/Ch_14_Binary_Search_Trees/binary_search_tree_sequences.cpp)
+If interested, here's my code for this problem: [binary_search_tree_sequences.cpp](https://github.com/Apollys/EPI-Variants-Solutions/blob/main/Ch_14_Binary_Search_Trees/binary_search_tree_sequences.cpp)
 
 ---
