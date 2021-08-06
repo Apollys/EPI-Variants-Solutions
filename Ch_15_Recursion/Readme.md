@@ -246,7 +246,7 @@ Okay this is not a programming question at all.  If you want to skip this questi
 
 **32 Knights.**  Observation: knights only attack opposite-colored squares from their current square.  Thus, if we place knights on all the white squares, there's no way they can attack each other.
 
-**14 Bishops.**  Bishops don't attack the squares next to them.  Let's start by placing a row of bishops along the top edge of the board, we notice the bottom edge of the board is unattacked except for the two corners.  So we place bishops in all non-corner squares of the bottom row and that gives us 6 + 8 = 14 bishops.
+**14 Bishops.**  Bishops don't attack the squares next to them.  Let's start by placing a row of bishops along the top edge of the board.  Now we notice the bottom edge of the board is unattacked except for the two corners, so we place bishops in all non-corner squares of the bottom row and that gives us 6 + 8 = 14 bishops.
 
 **16 Kings.**  Kings attack a ring of squares around themselves, so we just need to place the kings on a spaced grid for optimal placement.  Of course we start in the corner so we can get as many kings as possible on the board.  This gives us a grid of 4 x 4 = 16 kings.
 
