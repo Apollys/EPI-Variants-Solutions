@@ -32,7 +32,7 @@ The worst case time complexity is pretty bad of course, but there's nothing to b
 
 ---
 
-**Recursive to iterative algoirthm translation - nonrecursive binary tree traversals.**
+#### **Recursive to iterative algoirthm translation - nonrecursive binary tree traversals.**
 
 These questions actually open the door to a very interesting category of problem in computer science, which is emulating the recursive function call stack with an iterative algorithm.  A nice general theoretical result to know is that it can always be done.
 
