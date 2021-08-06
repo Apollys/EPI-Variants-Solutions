@@ -9,6 +9,6 @@ Click a folder above to browse solutions by chapter.
 ---
 
 TODO:
+ - [ ] Chapters 14 - 19 Variants
  - [ ] Add code for Chapter 9 - construct max tree problem
- - [ ] Chapters 10 - 19 Variants
  - [ ] Chapter 4 Variants (Maybe)
