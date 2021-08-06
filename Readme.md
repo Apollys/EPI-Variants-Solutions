@@ -1,6 +1,9 @@
-# EPI-Variants-Solutions
+# Elements of Programming Interviews: <br>Solutions to Variants
 
-### Solutions to Elements of Programming Interviews Variant Problems
+![image](https://user-images.githubusercontent.com/37650759/128461145-53ef354a-78d0-47de-9d6b-fb71cec8344e.png)
+
+
+### [Elements of Programming Interviews, by Adnan Aziz, Tsung-Hsien Lee, Amit Prakash](https://www.amazon.com/Elements-Programming-Interviews-Insiders-Guide/dp/1479274836)
 
 ---
 
