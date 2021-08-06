@@ -244,7 +244,7 @@ Thus, my solution is *max(1, n - 2)*.  This is not a programming question at all
 
 Okay this is not a programming question at all.  If you want to skip this question entirely, go ahead, that's what I did.  But since I'm making a solutions reference guide now, I figured I'll give the answers now.
 
-**32 Knights.**  Observation: knights only attack opposite-colored squares from their current square.  Thus, if we place knights on all the white squares, there's no way they can attack each others.
+**32 Knights.**  Observation: knights only attack opposite-colored squares from their current square.  Thus, if we place knights on all the white squares, there's no way they can attack each other.
 
 **14 Bishops.**  Bishops don't attack the squares next to them.  So if we start by placing a row of bishops along the top edge of the board, we notice the bottom edge of the board is unattacked except for the two corners.  So we place bishops in all non-corner squares of the bottom row and that gives us 6 + 8 = 14 bishops.
 
