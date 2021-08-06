@@ -157,4 +157,99 @@ So how can we make use of this extra pole?  Let's start brainstorming some ideas
 
 To move k rings from P1 to P2, we could first move k-2 rings out of the way instead of just k-1, lets place them on P4.  Then we can move the k-1'th ring to P, freeing us up to move the k'th ring to P2.  Now we just reverse the process by moving the k-1'th ring from P3 to P2, and then the remainig k-2 rings from P4 to P2.
 
-But is this our only option?  Could we have made a different choice somewhere?  Well of course, we could choose to move any number of rings to P4 on the first step.  Let's say we chose to move *i* rings to P4 on the first step.  Then we move *k - 1 - i* rings to P3 on the next step, leaving just the kth ring left.  Now we move the kth ring to our target pole and stack everything back up.  So we've effectively split the problem into two recursive problems of size *i* and *k - 1 - i*, and final number of steps will be dictated by the sum of the number of steps in the two subproblems.  What will be more efficient, splitting into two problems of similar sizes, or into one small and one large problem?  Intuitively, we might think it makes sense to balance the size of the subproblems as much as possible. (Mathematically, this would be the optimal choice for any superlinear time complexity algorithm, while the most imbalanced case would be optimal for sublinear time coimplexity. For linear time complexity, all choices would be equal.)
+But is this our only option?  Could we have made a different choice somewhere?  Well of course, we could choose to move any number of rings to P4 on the first step.  Let's say we chose to move *i* rings to P4 on the first step.  Then we move *k - 1 - i* rings to P3 on the next step, leaving just the kth ring left.  Now we move the kth ring to our target pole and stack everything back up.  So we've effectively split the problem into two recursive problems of size *i* and *k - 1 - i*, and final number of steps will be dictated by the sum of the number of steps in the two subproblems.
+
+What will be more efficient, splitting into two problems of similar sizes, or into one small and one large problem?  Intuitively, we might think it makes sense to balance the size of the subproblems as much as possible. (Mathematically, this would be the optimal choice for any superlinear function, while the most imbalanced case would be optimal for a sublinear function. For linear time functions, all choices would be equal.)  Let's look at the numbers to make sure we get the right solution:
+
+```
+Rings -- Moves
+2	------ 3
+3	------ 7
+4	------ 15
+5	------ 31
+6	------ 63
+7	------ 127
+8	------ 255
+9	------ 511
+10	---- 1023
+```
+
+As we can see, the function for the optimal number of moves is certainly superlinear - it's exponential in fact.  The exact formula is just num_moves = 2<sup>n</sup> - 1.  So we want the most balanced division of subproblem size for an optimal solution to the 4 peg problem.
+
+In fact, this observation generalizes directly to the optimal solution for the Towers of Hanoi problem with an arbitrary number of pegs.
+
+---
+
+**Compute all possible character sequences associated with a phone number without using recursion.**
+
+Once again, we already know how to convert a general recursive algorithm to an iterative algorithm, so we can always fall back on that if needed.  However, we can also try to more directly approach this problem.
+
+As they mention in the beginning, you could use 7 nested for-loops to do this iteratively.  Now I really have a problem with them calling this the "brute-force" method - this is actually the most efficient possible method, there's nothing brute-force-ey about it. But the problem is it's not extensible.  What if I said phone number don't have 7 digits, but n digits? Now we're in trouble.
+
+So what we want to do in the more general case is keep track of the currently active prefix set, and then for each new digit, append all possibilities for that character to each element in our prefix set.  So it would be something like this:
+
+```c++
+// Note: take this as more of psuedo-code, I haven't tested it or checked for edge cases,
+// it's meant to outline the main idea of the algorithm and clarify how the iteration works.
+
+std::unordered_set<std::string> prefix_set{""};
+for (int digit : input_number) {
+    std::vector<char> char_options = digit_map[digit];
+    std::unordered_set<std::string> next_prefix_set{}
+    for (const std::string& prefix : prefix_set) {
+        for (const char c : char_options) {
+            next_prefix_set.insert(prefix + c)
+        }
+    }
+    prefix_set = std::move(next_prefix_set);
+}
+```
+
+---
+
+**Compute the number of configurations of n non-attacking queens on an n x n chessboard.**
+
+Once again the "compute all the answers" question strikes, and so we can safely jump straight to brute force, at least as a starting point.  We'll enumerate all possible placements of the queens, which is equivalent to enumerating all possible permutations of length n (since we know a priori that all queens must be on their own row and their own column).  Check if each is a solution, and if so add to solution set.
+
+There are slight optimizations to be had here with respect to reflective and rotational symmetry - any position can be rotated to one of four distinct positions, reflected vertically, horizontally, both, or neither, (4 options), giving up to 16 variations of any one position (note that not all will be unique).  You could try to find a "canonical representation" for each of these up-to 16 positions, or even better, enumerate your positions such that you generate exactly one position from each of these equivalence sets.
+
+However, I don't find this optimization particularly interesting or useful, so I'm not going to bother with it for now.  Perhaps later if I am so motivated, I will come back and add it.
+
+A more interesting variant of this problem is to think about how you might find any configuration of n non-attacking queens.  In practice, there are many interesting methods such as hill climbing with random restart, and other stochastic search processes that perform very well on this problem.
+
+---
+
+**Compute the smallest number of queens that can be placed to attack every empty on an n x n chessboard.  (Queens do not have to attack/defend each other.)**
+
+Let's start working our way up through some examples:
+
+```
+n = 2     n = 3     n = 4      n = 5
+
+Q x       x x x     Q X X X    ???
+x x       x Q x     X x x x
+          x x x     X x Q x
+                    X x x x
+```
+
+It's pretty clear that our solutions here for n = 2 to 4 are optimal.  Now try drawing out some examples of n = 5 to see if you can cover all the squares without adding another queen from the n = 4 solution.  With a little experimentation, you'll see that it can't be done.
+
+I haven't tried to write up a formal proof of this (again because I don't think this problem is very valuable), but I do remember spending a reasonable amount of time drawing up a bunch of examples for chessboards up to n = 8 and convincing myself that there's nothing better to do than just trivially adding a queen to the corner each time you increment n past 3.
+
+Thus, my solution is *max(1, n - 2)*.  This is not a programming question at all, more of a geometry/logic puzzle, which is why I won't spend too much time on it here.
+
+---
+
+**Compute a placement of 32 knights, or 14 bishops, or 16 kings, or 8 rooks on an 8x8 chessboard in whic no two pieces attack each other.**  (Note I added an "or" to the wording in my book, which was very unclear.)
+
+Okay this is not a programming question at all.  If you want to skip this question entirely, go ahead, that's what I did.  But since I'm making a solutions reference guide now, I figured I'll give the answers now.
+
+**32 Knights.**  Observation: knights only attack opposite-colored squares from their current square.  Thus, if we place knights on all the white squares, there's no way they can attack each others.
+
+**14 Bishops.**  Bishops don't attack the squares next to them.  So if we start by placing a row of bishops along the top edge of the board, we notice the bottom edge of the board is unattacked except for the two corners.  So we place bishops in all non-corner squares of the bottom row and that gives us 6 + 8 = 14 bishops.
+
+**16 Kings.**  Kings attack a ring of squares around themselves, so we just need to place the kings on a spaced grid for optimal placement.  Of course we start in the corner so we can get as many kings as possible on the board.  This gives us a grid of 4 x 4 = 16 kings.
+
+**8 Rooks.**  Rooks don't attack diagonally, so just place them along a diagonal. It happens the longest diagonal has length 8, so we're done.
+
+---
