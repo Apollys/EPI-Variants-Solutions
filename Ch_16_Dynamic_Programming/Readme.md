@@ -356,3 +356,21 @@ This is the divide the spoils fairly problem, but we're looking for the solution
 Same time and space complexities as the divide the spoils problem.
 
 ---
+
+**Minimum palindromic decomposition - given a string, break it into the concatenation of a sequence of substrings, such that each substring is a palindrome and the total number of substrings is minimized.**
+
+We're going to use a dynamic programming approach that's very similar to that used in the previous problem.  First let's not that in the previous problem the book used prefix strings as keys into a hash map to store intermediate results, but this is completely unnecessary.  We could just use a single integer corresponding to the index.  Furthermore, since this integer is an index, we can use a vector - there's no need for a hash map at all.  So we will keep this in mind as we tackle this problem to make the solution simpler.
+
+If we start thinking down the route of computing the result up to some index *i*, and then at each step extending that *i* by 1, we may run into what seems to be a snag.  Given that `s[0, i]` is a palindrome, there's no easy way to determine if `s[0, i+1]` is a palindrome.  Incrementally increasing word sizes doesn't work well with palindromes.  So we need to bust out a classic old trick that should always be on your mind when you hear the word palindrome, it's a trick that stems from the question: how do you compute the longest palindrome that is a substring of a given string?
+
+The trick is to use a middle-out algorithm, as it mimics the structure of the palindrome property.  For each possible center point, we move outwards in both directions together, checking that the new left and right characters match, and as soon as there's a mismatch we get an early out and move on to the next center point.  This yields an O(n<sup>2</sup>) algorithm with lots of early-outs in most cases.  (Contrast this to the naive approach, which would be for each start and endpoint, check if it's a palindrome, yielding O(n<sup>3</sup>) time complexity with zero early-out opportunities.)
+
+So we can do a one-time O(n<sup>2</sup>) precomputation that covers all possible palindrome substrings of the given string.  Specifically, we could store an array that tells us the length of the longest palindrome starting at each possible index.  Armed with this array, our DP algorithm just needs to fill out a 1-D DP array tracking the number of strings in the minimum palindromic decomposition up to the current index.  At each index i, we look up the longest palindrome that starts at i+1, and in the dp array at the index corresponding to the end of this palindrome we store the current value plus 1: `dp[i + length] = dp[i] + 1`.  Once i reaches the end of the input string, we're done.
+
+The time complexity is O(n<sup>2</sup>) for precomputation and O(n) for the dynamic programming algorithm, so O(n<sup>2</sup>) in total. The space complexity is O(n) to store the length of longest palindrome at each step, and O(n) to store the DP array, so O(n) in total.
+
+Now you might be thinking, wait we're not done!  We only saved the number of strings in the minimuim palindromic decomposition, but didn't get the decompostion itself!  Can you think of a very minor adjustment to our algorithm which allows us to recover the decomposition without increasing time or space complexity?
+
+All you need to do is track the index that you came from at each update step in the dp array.  So for example, when you do `dp[i + length] = dp[i] + 1`, also add a line `prev_index[i + length] = i`.  Now you can recover the sequence of substrings by retracing your steps backwards from the end.  Note that it was important that we saved just the previous index, not the whole substring s\[i+1 : i+length].  You might have thought the latter would be more convenient, but that turns an O(1) operation into an O(n) operation (copying a whole string), which is inside an O(n) loop already, and so would increase the time complexity of this section of our algorithm from O(n) to O(n<sup>2</sup>).  In general this is something to be cautious of, though in this particular case we already did an O(n<sup>2</sup>) precomputation, so it wouldn't have increased the runtime complexity (but still could definitely have an impact ont he algorithm performace in practcie).
+
+---
