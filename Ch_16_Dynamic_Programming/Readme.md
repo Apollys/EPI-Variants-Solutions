@@ -57,3 +57,204 @@ It seems this is just a direct reduction to the previous problem.  If we knew th
 However, is there any way to compute the sequence of lead changes directly without computing all sequences?  The problem is, if you start to try to generate sequences, you will very likely not end up with the target total score.  In order to ensure you do hit the target total score, you need the sequences (or at least the counts of each play_score that you have to work with), which brings us right back to the previous solution.
 
 So how do we best adapt the previous solution to work here?  We need to save not just the lengths of each of the num_combinations score combinations that lead to the target score (per team), but now the actual counts of each value, as we did in the preliminary solution to the initial problem.  This will add a factor of O(num_play_scores) to our space complexity, which seems completely justifiable.  Now we want to compute the number of lead changes that occur for each possible sequence pairing.  This means we can use a similar DP table as before, but it's going to need to track number of lead changes rather than number of interleavings, which means it will need to be reset and recomputed for each new sequence pair.  So the time complixty for this step will go up to O(num_sequences_1 * num_sequences_2 * max_length_sequence_1, max_length_sequence_2).  This is just the time complexity of iterating through all pairs of sequences, so this is the best we can do for this type of algorithm.  (To improve, we would need a way to generate the solution sequence directly, or a small subset of candidate solution sequences.)
+
+---
+
+**Compute the Levenshtein distance using O(min(a, b)) space and O(ab) time.**
+
+The standard DP algorithm given in the book for computing Levenshtein distance only uses the previous and current row and any given time, and of course we can pick the rows to correspond to the shorter of the two words since everything is symmetrical, so the space complexity is in fact O(min(a, b)) as required.
+
+---
+
+**Find a longest common subsequence given two sequences of characters.**
+
+This is very similar to computing the Levenshtein distance, in fact it is slightly simpler to do the update logic.  Let's consider two words "aXbXaXc" and "XbXcXaXc", where X's represent random distinct unmatching characters (an X in one word does *not* match an X in the other word).  Our initial table will look like this:
+
+```
+  | _  a  X  b  X  a  X  c
+--|------------------------
+_ | 0  0  0  0  0  0  0  0
+X | 0
+b | 0
+X | 0
+c | 0
+X | 0
+a | 0
+X | 0
+c | 0
+```
+
+This represents the fact that the longest common subsequence between two empty strings has length zero.  From here, we consider adding one more character onto one or both of the words, and seeing how the information we've computed so far in our DP table can give us the longest common subsequence length of the new pair of words:
+ 1) If the last character of both of the words are equal, the LCS (longest common subsequence) is the LCS of the two words without the last character, plus the last character.  This means the length would be the length in the square up-left in the DP table plus 1.
+ 2) If the last characters are not equal, we can use the results we already know for the LCS of each word and the other word excluding its last character.  This gives us two options, the square upwards and the square leftwards in the DP table.  Note that in this case we do not add 1, we are simply using that exact same subsequence.
+ 3) To combine all the options, we pick the best (max length) of the three, and store than in the current spot in the DP table.
+
+Filling out the table, you should get the following result.  I added an asterisk where case 1 above occurs:
+
+```
+  | _  a  X  b  X  a  X  c
+--|------------------------
+_ | 0  0  0  0  0  0  0  0
+X | 0  0  0  0  0  0  0  0
+b | 0  0  0  1* 1  1  1  1
+X | 0  0  0  1  1  1  1  1
+c | 0  0  0  1  1  1  1  2*
+X | 0  0  0  1  1  1  1  2
+a | 0  1* 1  1  1  2* 2  2
+X | 0  1  1  1  1  2  2  2
+c | 0  1  1  1  1  2  2  3*
+```
+
+So the longest common subsequence between these two words has length 3.  But how do we retrieve the subsequence itself?  Well that's why I've added asterisks to the case 1 elements: these indicate the positions in which a character was added.  In other words, following the path backwards and writing down the characters that correspond to each asterisk will give us the LCS (in reverse).  Starting at the 3, we write down 'c', and move up-left.  From there, we either move up or left (since they tie in length), and then at the next stop move up or left, whichever we didn't before (because the other option gives us a shorter length).  At this 2* element, we add 'a' to our running sequence and move up-left.  From here, we move some combination of 3 steps up and 1 step left to arrive at the 1* element.  At this point, we append 'b' to our running sequence, move up-left to 0, and terminate (since we're at 0).
+
+The sequence we've written down is "cab", reversing it gives "bac", which we return as the longest common subsequence of "aXbXaXc" and "XbXcXaXc".
+
+Notice that we actually used the whole table at the end to reverse engineer the LCS from the LCS lengths.  This means if we only save the current and previous rows of the table, we're going to have to store the actual subsequence rather than just the length. Since the subsequence has length O(max(length_1, length_2)), this doesn't end up saving us any space and just complicates things.
+
+So our final time and space complexities are both O(length_1 * length_2).
+
+---
+
+**Compute the minimum number of characters to delete from a given string that would make it a palindrome.**
+
+This can be reduced to finding the length of the longest common subsequence between the given string and its reversed string.  Once we have the length of the LCS, the number of characters to be deleted is the length of the input string minus the length of the LCS.
+
+Now we don't need to actually track the LCS, only its length, so we can reduce the space complexity to O(n). Time complexity is O(n<sup>2</sup>) still.
+
+---
+
+**Given a string and a regular expression, what is the string in the langauge defined by the regular expression that is nearest to the given string?  Nearest is defined as minimum Levenshtein distance.**
+
+This is very similar in nature to the basic Levenshtein distance DP algorithm given in the book.  However, you need to cover all the expression type cases that a regular expression can cover, such as character ranges/sets (for example: \[a-ZA-Z]), wildcard characters ("." matches any character), and repetitions (usually represented by "\*").  Ironing out all the details can be a bit tricky and laborious: I recommend walking through a simple example such as: `word = "Abc01", regex = "[a-z]*[0-9]+`.  Note: I would start by converting all `+` items to `*` items, so `regex = "[a-z]*[0-9][0-9]*"` to give yourself one less complexity to deal with.  Each row of your DP table will correspond to adding a new letter from the input word, so there will be length(word) + 1 = 6 rows (the first row corresponds to the empty string).  Each column of your DP table corresponds to adding the next "expression unit" from your regex, so there will be 3 + 1 = 4 columns (first column corresponds to empty regex, regex units are: `[a-z]*, [0-9], [0-9]*`.
+
+Fill out the table, and as you go track whether you were adding a character, deleting a character, or changing a character at each spot.  Once you fill out the table, the bottom right element should have Levenshtein distance value 1.  Tracing back through the table, you should get the following path: `'1' matches with [0-9]*, '0' matches with [0-9], 'c' matches with [a-z]*, 'b' matches with [a-z]*, 'A' was a mismatch so it needs to be deleted`.  Reversing this sequence and applying insertion/deletion operations where needed, we get the string "bc01".
+
+So I've roughly explained how to walk through the algorithm by hand.  As for implementing it in code, there are a lot of little checks and cases that need to be covered, so I'm not sure how valuable it would be unless you really want to.  For this one, after walking through the very simple example above, I would suggest writing out a slightly more complicated example and walking through that one by hand.  After that, you should be feeling pretty comfortable with how this algorithm works.  If you want to implement it in code afterwards, you can, but if you feel your time is more valuably spent working on other problems, that would be completely logical as well.
+
+---
+
+**Given two strings s1 and s2, and a target string t, determine if the characters of s1 and s2 can be interleaved to obtain the target string t.**
+
+First note, though it won't affect the worst-case time complexity, if the lengths of s1 and s2 don't sum to equal the length of the target string, we can return false immediately.
+
+Once again, we'll implement a dynamic programming table very similar to what we've done in the previous problems.  The rows will correspond to one input string, and the columns to the other.  Let's use the example they give in the book, s1 = "gtaa", s2 = "atc", and the target sequence is "gtataa".  (If you're wondering why they're using these weird random letters, it's because ACGT are the letters that encode DNA sequences, and a lot of sequence matching algorithms have historic roots in DNA sequence algorithms.)
+
+Our starting DP table setup will look like this:
+
+```
+  | _ g t a a
+--|-----------
+_ | *
+a | 
+t | 
+c | 
+
+target_sequence = "gtataac"
+```
+
+The `*` indicates where we "are" currently, which is the top-left corner at the start.  From there, we move either right or down in the table to the character that matches the next character in our target sequence.  For this example, this yields:
+
+```
+  | _ g t a a
+--|-----------
+_ | > > v
+a |     v
+t |     > > v
+c |         *
+
+target_sequence = "gtataac"
+```
+
+Since we reached the bottom right corner, we were able to create an interleaving of the target sequence and we can return true.  If instead we get stuck (cannot move right or down) and thus cannot reach the bottom right, we return false.
+
+There's one detail that this example oversimplifies.  It may seem from this case that we don't even need the DP table, we could just track two numbers representing our current position in each string, and thus walk through this table without actually using more than O(1) memory.  Is there a problem with this?
+
+Hint: consider the case `s1 = ab, s2 = abxy, target_sequence = abxyab`.
+
+```
+  | _ a b                       | _ a b 
+--|-------                    --|------- 
+_ | > > X                     _ | v 
+a |                           a | v
+b |                           b | v
+x |                           x | v
+y |                           y | > > *
+
+target_sequence = "abxyab"
+```
+
+As we see on the left, if we start by matching "ab" from s1, we will get stuck at the position of the character "x" in the target sequence: our only option is "a" but these characters don't match.  However, as shown on the right, there would have been a solution if we started by matching "ab" from s2 instead.
+
+This means it's not quite as straightforward as the original example made it seem.  Our choices now affect the options that we will have available for us in the future, and thus we do need to keep track of the information stored in the DP table.  Of course, we are only ever using the values directly up and directly left of a given square to compute the value in that square, so we can reduce the space complexity to O(min(s1_length, s2_length)).  Note that we don't actually need to track the index into the target sequence for each cell in the DP table, because its indices tell us how many characters have been used so far, and thus where we are in the target sequence.  Specifically, the box and index i, j in the DP table corresponds to matching character i+j in the target sequence.
+
+Time complexity is naturally O(s1_length * s2_length).
+
+---
+
+**Compute the number of paths from the top-left to the bottom right of an m x n array.  Use O(min(m, n)) space.**
+
+As were quite familiar with by now, since we're only using data in current and previous row at any given time, and since the algorithm is symmetrical with respect to m and n, we acheieve space complexity O(min(m, n)) by only keeping current and previous row in memory (and swapping rows/columns first if rows are bigger than columns).
+
+---
+
+**Solve the same problem as above in the presence of obstacles, specified by a 2D boolean array where true represents the presence of an obstacle.**
+
+Same as above but if a square has an obstacle we set its num_paths to 0 rather than the sum of up and left num_paths.
+
+Space complexity is still O(min(m, n)), and time complexity is O(mn).
+
+---
+
+**A fisherman is in a rectangular sea.  Given the value of the fish at each point (i, j) in the sea, compute the maximum value of fish a fisherman can catch on a path from top-left to bottom-right square.  The fisherman can only move down or right.**
+
+Same DP idea as before, but now we're tracking fish value instead of number of ways.  The update step will be `max_value[i, j] = fish_value[i, j] + max(max_value[i-1, j], max_value[i, j-1])`.
+
+Again, O(mn) time and O(min(m, n)) space.
+
+---
+
+**Solve the same problem as above when the fisherman can begin and end at any point.  Fish values may be negative.**
+
+First note: if fish values couldn't be negative, the optimal solution would just be the solution to the previous problem.
+
+With this insight in mind, the only extra case we have to handle is fish values being negative.  When would this give us a worse solution than starting at the top-left and ending at the bottom-right?
+
+It would give us a worse solution if at some point the fish value at our current square was more negative than the total positive fish values accumulated so far, so our cumulative fish value becomes negative.  At this point, we would be better off not using this path, but starting at the next square instead.  So our update will be `max_value[i, j] = fish_value[i, j] + max(0, max_value[i-1, j], max_value[i, j-1])`, where we've added in a max(0, ...) to just say, if all our options are negative, start a new path here instead.
+
+Still O(mn) time and O(min(m, n)) space.
+
+---
+
+**Call a decimal number monotone if the digits are (non-strictly) increasing as you read from left to right. Given a positive integer k, compute the number of length-k decimal numbers that are monotone.**
+
+Construct a DP table where rows correspond to length and columns to the final digit (from 0 to 9).  The initial DP table will look like this:
+
+```
+             Last Digit
+     | 0  1  2  3  4  5  6  7  8  9
+-----|------------------------------
+   1 | 1  1  1  1  1  1  1  1  1  1
+L  2 | 
+e  3 | 
+n  4 | 
+g  5 |
+t  6 | 
+h  7 |
+   8 | 
+   ...
+```
+
+Note the initial row in the DP table is saying that there is exactly one decimal sequence of length one ending with each possible digit.
+
+We can then fill in the DP table by computing cumulative sums across the rows.  I.e. the number of decimal digits of length 2 that end in 7 equals the sum total number of length-1 decimal digits that end in any digit up to 7 (for each of those, we simply append a 7 to the end).
+
+The time complexity will be O(10 * length) = O(k) and since we only ever use the current and previous row at a given time, the space complexity is O(2 * 10) = constant space.
+
+---
+
+**Compute the number of strictly monotone decimal numbers of length k for a given k.**
+
+Same as above but our cumulative sum up to digit 7 would tell us how many numbers end in 8 (i.e. 7+1) instead.  Everything else is identical.
+
+---
+
