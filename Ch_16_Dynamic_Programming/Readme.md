@@ -258,3 +258,101 @@ Same as above but our cumulative sum up to digit 7 would tell us how many number
 
 ---
 
+**\[Example problem, not variant] Given a 2D array of integers and an integer sequence, determine if the integer sequence can be found in the 2D array.  You may start anywhere in the grid and must travel to an adjacent (non-diagonal) entry at each step.**
+
+I am including this in here because the book's solution doesn't really make sense - it's overly complilcated and not optimal in terms of space complexity.  (In my version of the book, their solution has space complexity O(mnl), time complexity O(mnl) and uses a complicated triplet hash map for caching results.  Perhaps since I bought the book they've updated it.)
+
+Suppose we were searching for the sequence `[1, 2, 3, 8, 9, 7, 9]` in the following grid:
+```
+1 2 3
+2 9 4
+3 8 9
+```
+
+The first thing we might notice is that the grid contains no 7s, so we know the answer is false right away.  This gives us a nice early out, but of course doesn't reduce worst-case complexity.  Let's change the `7` in the sequence to a `1` so we don't have that early out.  Now our sequence is: `[1, 2, 3, 8, 9, 1, 9]`.
+
+We start by looking for any 1s.  Any square with a 1 will be a potential starting point.  There is exactly one square - the top left corner - so this is our one starting point.  The next value we need to match is a 2, so we look at all of the neighbors of the 1 at the top left to search for 2s.  Both the squares to the right and below match the value 2, so our set of current candidate squares are those two 2s.  Now, for eacah of those 2s, we look for a neighboring 3, of which there are two in total.  We continue in this way matching one 8, two 9s, and then... zero 1s so all of our candidate solutions have failed and we return false.
+
+Hopefully it's clear walking through this example that all we're doing is a breadth-first search.  I have no idea why the book brought in this suffix caching for mismatched values and all sorts of extraneous code that just makes the algorithm less efficient.
+
+For our BFS, the space complexity is just the maximum size of the current frontier set (also called fringe set, or active node set), which is potentially up to O(mn) if the grid dimensions are m x n.  The time complexity is O(mnl) in the worst case, if the fringe set grows up to size O(mn) and stays that large for O(l) steps.  So we saved a factor of l on space complexity over the book solution, and got the same time complexity.
+
+---
+
+**Solve the same problem as above, with the added restriction that each element in the grid may only be used at most once in the sequence.**
+
+So sometimes adding restraints to problem makes the problem more challenging because you have to think of clever ways to overcome those restrictions.  And other times it just removes the space for cleverness and there's nothing better to do than the basic, seemingly inefficient thing.  I think this particular question is a case of the latter.
+
+We need to track what's been visited for each partial sequence in the array, and for each of them it's going to be different.  This means we could try a BFS solution like before but each BFS frontier node would also have to track the visited state of the grid, and furthermore, we would end up with very few repeated subproblems, so even the idea of a BFS doesn't seem very efficient.  (An example of a repeated subproblem would be a 3x3 grid in which you could either snake columnwise or rowwise to the bottom right corner.  If you try to draw out more examples of cases that could lead to repeated subproblems, you will find they are very sparse.  In fact, for 3x3 grids I think there's only one other, plus its reflection.)
+
+So we might as well do DFS to save memory, since repeated subproblems will be sparse.  We just do a basic DFS, tracking visited nodes as we go, and resetting nodes to unvisited as we unwind the call stack.  Space will be O(mn) for visited status plus O(l) for function call stack (if implemented recursively) or some data structure to track the current active path (if implemented iteratively).  The time complexity will be a little trickier to compute: in general it shouldn't be very large, but we can think of some pathological examples that make it a very challenging problem.  For example, suppose the grid is just a massive grid of zeros, but with the values 1 and 2 sprinkled extremely sparsely here and there.  And suppose our target sequence is a bunch of zeros followed by a 1 followed by a bunch of zeros then a 2 followed by a bunch more zeros.  No matter where we start or what path choices we make, we're going to almost always match everything except at the points where we have a 1 and a 2 in our sequence.  (The reason I included 1 and 2 was so we weren't tempted to think we could start at the 1 and work our way outward, which we could do efficiently f the sequence were `[... 0, 0, 0, 1, 0, 0, 0,...]`.)
+
+So at each step we could have up to 4 valid neighbords, and we try up to l steps (where l is the length of the target sequence).  Also, we have a total of *mn* possible starting points, so this yields a loose upper bound on the runtime complexity of O(mn * 4<sup>l</sup>).  I definitely wouldn't be surprised if there's a sharper upper bound we could derive for this question, but I think that's not really the most important thing to worry about anyway.  The performance of this algorithm is so extremely dependent on input cases, that in practice you would want to analyze your input data and work on tailoring the algorithm to those scenarios.
+
+There is an effective initial early-out check that we can do for this problem, that we haven't mentioned yet.  Its utility will of course depend on the types of input cases the algorithm receives, as discussed above.  Suppose our sequence was `123242` but our grid only had two 2s.  We know right away the answer is false - this sequence can't possibly be in the grid since we can't re-visit visited squares.  So we return false immediately.  This check is cheap, so there's no reason not to implement it on top of whatever algorithm we employ.
+
+---
+
+**Enumerate all solutions to the same problem as above.  (Find the sequence in the grid, you cannot use an element in the grid more than once.)**
+
+Oh boy, another "find all the answers" question!  This means no room for cleverness, just perform a brute force trial and error, and record every success.  Imagine for example the grid were just a giant grid of all zeros, and the sequence a length mn/10 sequence of all zeros.  The solutions are just going to be every path we can legally draw through this grid, and so there's really no optimizing this out.  The easiest way to implement this would be to re-use the previous solution, but just not stop on success (instead record the result and continue).
+
+At the very least, we do still have our early out if there are no solutions because the grid doesn't contain enough of some value.  But in terms of worst case complexity, this is just going to be brute force: time and space complexity will equal the final solution size.  As we reasoned about in the previous problem above, we can deduce a loose upper bound for this at O(mn * 4<sup>l</sup>).
+
+---
+
+**Knapsack Problem - O(w) space.**
+
+As we've seen many times by now, the DP algorithm outlined in the book only uses two rows at a time, so the required space complexity is O(row_size) = O(w).
+
+---
+
+**Knapsack problem - optimal space complexity.**
+
+So if you've gone through the knapsack problem and understand the solution as presented in the book, at some point you probably should have been very worried that it seems to be potentially *worse* than the brute force algorithm - enumerate all item combinations and check their value.  For example, suppose I had only three items with weights are 400, 600, and 900, and values 2, 3, and 4 respetively, and suppose my knapsack capacity is 1000.  This algorithm as presented will compute 3000 values in a DP table just to tell me to grab the first two items, which I can see plainly with just a couple calculations in my head.
+
+So if this isn't something you've though about yet, take a moment to think about it now.  How can such a famous computer science problem with a smarty-pants DP algorithm seem to give us a solution that's absurdly worse than the brute force algorithm?  Is there a way we can rectify this?
+
+...
+
+Think about trying to reduce the weight values that we compute.  Rather than having a table with 1000 columns, is there a way we could have a table with just a few columns?
+
+If you think about it, all we need are the weights that items could actually sum up to.  There's no reason to consider 400, 401, 402, and 403 separately, for instance, because we can clearly see that the solutions for all of those weights will be the same.  There's no combination of items that sums to 401, 402, or 403.  So we start by just creating a list of possible item weight sums up to our knapsack capacity.  We can start by sorting all the weights to give us a nice early out from this subalgorithm.  Ideally, we would like to generate the list of sums in sorted order, but from my own experimentation that seems pretty hard to do, so I think it's reasonable to just generate the list first and then sort it after.
+
+Once we have the list of the possible weight sums of items, these become our column labels in our DP table.  Now the number of columns equals the number of distinct weight sums, and the rest of our algorithm will be the same as before, so the final space complexity is O(num_weight_sums) and the time complexity is O(num_item_combinations + num_weight_sums * num_items), where the first term indicates the number of item combinations that yield sums less than or equal to the knapsack capacity (even though our DP table doesn't have separate columns for them, we still had to check them in the first place).  So finally, we have an algorithm whose worst-case time complexity is not beaten by brute force (note: it's still not better either).  For cases in which many combinations of items will sum to the same weight sums though, we get an algorithm that's much more efficient than brute force.
+
+---
+
+**Solve the fractional knapsack problem - the theif can take any fraction of an item he wants, and it will have that same fraction of its original value.**
+
+Now the greedy algorithm is optimal.  We just sort items by value/weight, and start by taking as much as we can of the most valuable per unit weight item, then if we have space left take as much as we can of the next item, and so on.
+
+Time complexity is O(n log(n)) to sort, space complexity is O(n) to store the sorted list.
+
+---
+
+**Divide the spoils faily.  Two thieves have stolen items and wish to split them into two groups with minimum difference in value of each group.**
+
+We can rephrase this as "select a subgroup of items that maximizes their sum values, given their value must be less than or equal to total_value / 2".  This is just a version of the knapsack problem, in which values in this problem correspond to both weights and values in the original knapsack problem (since the values here are both the constraint and the quantity to be maximized).
+
+You could also solve it directly by generating the sum combinations of values (as we discussed for weights in the knapsack problem above) and tracking the largest value_sum found.  This gives O(num_item_combinations) time and O(n) space (to store which items are used in the optimal solution).
+
+(A little more precisely on the time complexity: if we sort first by value, we can then get an early out once item combinations sum to a value greater than half the total value.  This gives time complexity O(n log(n) + num_item_combinations_up_to_half_value).)
+
+---
+
+**Solve the above problem, but with the additional constraint that the thieves must have the same number of items.**
+
+As above, we can just generate the item combinations directly.  This time, we can only count a combination as a potention solution when the number of items equals n/2, at which point we stop and generate the next item combination.
+
+Same time and space complexity as above.  You could also limit the time complexity by O(n choose n/2) if you prefer to write it that way - it will be a little looser of a bound most of the time, but also more general.
+
+---
+
+**Determine if a tie is possible in the US presidential election between two candidates.**
+
+This is the divide the spoils fairly problem, but we're looking for the solution where the "value" of each of the two subgroups is exactly half the total value.
+
+Same time and space complexities as the divide the spoils problem.
+
+---
