@@ -473,10 +473,10 @@ Still O(n<sup>2</sup>) time and O(n) space.
 
 If your spider senses were tingling this whole time that it seems kind of inefficient to use O(n<sup>2</sup>) time for all these algorithms, good!
 
-A good thing to do when you see a problem and have sketched out a rough algorithm is to then write out what operations you need.  In our case we need the following, where value means *last value of the subsequence*:
- - Look up largest length associated with value <= given value
- - Insert new length and value
- - Potentially deleting or updating (value, length) pairs by length or value (not sure yet)
+A good thing to do when you see a problem and have sketched out a rough algorithm is to then write out what operations you need.  In our case we need the following:
+ - Look up largest length associated with end_value <= given value
+ - Insert new length and end_value
+ - Potentially delete and/or update (end_value, length) pairs by length or end_value (not sure which we will use yet)
 
 This should be *almost* looking like an amazing candidate for a BST, except that first operation which is quite tricky.  However, let's think about that a little more carefully. Why couldn't we just look up the largest value and use that?  Well, because the length of a sequence ending in some large value may actually be less than the length of a sequence ending in some smaller value.  But hold on!  If that were the case, why would that shorter but larger-end-value sequence ever be useful to us?  It wouldn't! It serves only to complicate our algorithm.  So how about we assume we will always throw out a sequence if another sequence catches up to it in length but has a smaller end value?  Then with this in play, the first criteria above becomes:
  - Look up largest (length, value) pair, which we know *must* have both the largest length and the largest value among all items in the data structure
