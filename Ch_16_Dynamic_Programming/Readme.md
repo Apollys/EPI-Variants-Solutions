@@ -374,3 +374,134 @@ Now you might be thinking, wait we're not done!  We only saved the number of str
 All you need to do is track the index that you came from at each update step in the dp array.  So for example, when you do `dp[i + length] = dp[i] + 1`, also add a line `prev_index[i + length] = i`.  Now you can recover the sequence of substrings by retracing your steps backwards from the end.  Note that it was important that we saved just the previous index, not the whole substring s\[i+1 : i+length].  You might have thought the latter would be more convenient, but that turns an O(1) operation into an O(n) operation (copying a whole string), which is inside an O(n) loop already, and so would increase the time complexity of this section of our algorithm from O(n) to O(n<sup>2</sup>).  In general this is something to be cautious of, though in this particular case we already did an O(n<sup>2</sup>) precomputation, so it wouldn't have increased the runtime complexity (but still could definitely have an impact ont he algorithm performace in practcie).
 
 ---
+
+**Pretty printing - given a sequence of words and a maximum line length, determine where to place line breaks to minimize the sum of squares of number of blank spaces at the end of all lines except the last line.**
+
+Note: I am not sure the explanation for the DP algorithm given to the previous problem in the book makes sense.  They say "if in the optimal placement for the ith word, the last line consists of words j, j+1, ..., i, then the first j-1 words must be placed optimally" (this seems unclearly worded, I'm not sure exactly what they mean even).  However if we look at their example, all we need to do is make the next words "g" and "h", and then the "c" and "d" from the second line would have to bump back up to the first line to give an optimal solution.  TODO: check their code and see if it handles it correctly. Maybe their explanation is just bad, but the code words properly.
+
+* * *
+
+Your instinct might be now that we don't care about the last line anymore, a greedier approach should be the way to go.  Let's try to think about this in more formal logic.
+
+Suppose we have 3 lines of text when we put as many words on each line as possible.  The last line doesn't count towards our cost function (the sum of squares of blank spaces at the end of all but the last line), so our "messiness" or cost equals b_0<sup>2</sup> + b_1<sup>2</sup> (where b_i = number of blanks at the end of line i).  What would happen if we moved a word from the end of line 0 to the beginning of line 1?
+
+Let's start with the easy case: suppose line 1 can still fit all the words it fit before, plus the new word.  So now our cost function becomes: (b_0 + l)<sup>2</sup> + (b_1 - l)<sup>2</sup> (where l is the length of the word we move plus 1).  It looks like depending on the b_i and l values, this could actually be better.  For example, suppose line 0 was originally completely full, and line 1 had four blank spaces at the end.  This yields a total messiness cost of 4<sup>2</sup> = 16.  Now suppose the last word of line 0 had length 1, so after moving the last word from line 0 to line 1, both lines have 2 blank spaces at the end, yielding a messiness cost of 2<sup>2</sup> + 2<sup>2</sup> = 8.  Hence we conclude in this case a pure greedy algorithm is not necessrily optimal.
+
+Now let's look at the tougher case: suppose moving the word from line 0 to line 1 caused line 1 to overflow, so one or more words had to move from line 1 to line 2.  This means that the number of characters moved from line 0 to line 1 must be greater than b_1.  So originally we had cost b_0<sup>2</sup> + b_1<sup>2</sup>, and now we have cost at least (b_0 + b1 + (positive number))<sup>2</sup>  (this is just from the first line, we assume the second line is filled completely to get a minimum cost bound).  Since we know for positive numbers (a + b)<sup>2</sup> is always greater than a<sup>2</sup> + b<sup>2</sup>, this new cost is always greater than the original cost, and so pushing the word onto the next line could never be the optimal choice.
+
+So extending this argument inductively, pushing words onto the next line could only ever be beneficial if it wouldn't cause the next line to overflow.  We might ask, but what about in case 2 above if there were more lines, and pushing the word from line 0 to line 1 had increased the cost for lines 0 and 1, but decreased the cost for line 2, and by more than it increased the cost for lines 0 and 1 combined?  But this case is kind of like the two line case, where you can think of the line in the middle (line 1) as just a "middleman" line between 0 and 2.  This isn't a formal proof, but should offer some justification as to why it makes sense that pushing words from line 0 to 1, then 1 to 2 operates in a similar way to just pushing words from one line to the next.
+
+Using this idea we have, we can write an algorithm that starts off greedily filling all the lines as much as possible, and then checks whether or not words can be moved to the next line to decrease the cost, only in cases where it wouldn't cause overflow.  The only issue is: when do we stop?  If you just do one top to bottom iteration, it's possible that moving a word from line 5 to 6 freed up space in the end of line 5, so now a word from line 4 and move to line 5.  This suggests iterating in reverse order from bottom-to-top instead.
+
+The time complexity would be O(n) if n is the number of characters in the input (as we just perform a fixed number of passes over the data). If we just work with the data as strings, the space complexity will also be O(n).  However, we can track words as just integers (word length) rather than strings to avoid string copy overhead and reduce the space complexity to O(w), where w is the number of words in the input.
+
+TODO: Test this algorithm and verify it produces the optimal results in all cases.
+
+* * *
+
+**The DP Solution**
+
+So that was a very math/logic-based approach to solving this problem.  If you're thinking, there's no way I could have come up with that myself on the spot, especially in a high-pressure interview scenario, don't worry.  You can definitely fall back on a DP solution.
+
+TODO: write up this solution, once I determine whether or not the book's explanation and algorithm make sense.
+
+---
+
+**Suppose the messiness cost function is simply the sum of the number of blanks at the end of each line (including the last).  Solve the messiness minimization problem.**
+
+Let's take a quick digression into discussing the functionality of sum-of-squares versus sum-of-absolute-values loss/cost functions.  Take a moment to try to answer this question for yourself: Why are sum of squares cost functions so popular?  What's wrong with just summing up the values?
+
+Suppose that a bunch of people are waiting to login to a server to play a game.  We want to design an algorithm to maximize user satisfaction, which means minimizing some combined metric of all user wait times.  Suppose we just used a sum-of-values cost function.  You try to login into the server, and wait for an hour, two hours, all day just to login.  You're thinking, I've been waiting forever, something must be wrong with the algorithm!  But there's nothing wrong with the algorithm it's optimizing around the cost function it has.  That cost function doesn't differentiate between making someone who's alredy been waiting for 12 hours wait another 30 minutes, versus making someone who hasn't waited at all yet wait for 30 minutes.
+
+And this is why we introduce the sum of squares cost function: it gives increasing weight to increasingly large errors.  This is based on the mathematical fact that (for positive values) (a + b)<sup>2</sup> > a<sup>2</sup> + b<sup>2</sup>.  (You can prove this by just expanding the expression (a + b)(a + b) = a<sup>2</sup> + b<sup>2</sup> + 2ab.)  So a sum of squares error function tries to force all errors to be reasonably low, while a sum of values error function will just find the easiest terms to optimize and minimize them all the way to zero, while completely abandoning the hardest terms to optimize and letting them go super high.
+
+So after all this digression, we return to the messiness optimization problem and ask what would happen if we just used a sum of values cost function?  Well there's no longer this penalty that we get for reducing the cost for the current term but increasing the cost for some other term that will come into play later.  Moving a word to the next row will *always* increase our current row cost by the length of the word, and will at *best* reduce the cost of future terms by that same amount.  So there's no reason to ever move a word onto the next line if it fits in the current line.
+
+In other words, the simply greedy algrithm of filling the lines up as much as possible before each line break is optimal.  Time complexity is O(n) and space complexity is O(1) since we're just computing the cumulative messiness value, not storing the actual placement of all the words.  We could store the indices of each line break to get a more useful solution if we wanted, and this would only take O(num_lines) space.
+
+---
+
+**Find a longest nondecreasing subsequence of a given array.**
+
+We can use the dynamic programming example given in the book, but track the previous index along with the length in our DP array (or use two arrays, one for each).  Then we can retrace our steps at the end to get the (reversed) longest nondecreasing subseqence.
+
+Complexities are the same as the example: O(n<sup>2</sup>) time and O(n) space.
+
+---
+
+**Find a longest alternating subsequence of a given array. (Alternating means a\[i] < a\[i+1] for even i and a\[i] > a\[i+1] for odd i.)**
+
+This is going to be the same algorithm as finding the longest nondecreasing subsequence, but now our comparison operator depends on the length of the sequence that we look up in the DP array.  So suppose we are currently at the value 10.  If the DP array gives us a length of 4 ending at index j, we have to check that the value in the input array at position j is less than the value at the current index in order for it to count as a valid subsequence candidate.  If, however, the length in the DP array were 5, the comparison operator would be flipped.
+
+Retrieving the sequence at the end will be identical to the above problem.
+
+Time and space complexities are still the same: O(n<sup>2</sup>) time and O(n) space.
+
+---
+
+**Find a longest weakly alternating subsequence of a given array.**
+
+Same algorithm as above but replace strict inequalities with weak inequalities.
+
+---
+
+**Define a sequence to be convex if a\[i] < (a\[i-1] + a\[i+1])/2 for 1 <= i <= n-2.  Find the longest convex subsequence of a given sequence.**
+
+TODO
+
+---
+
+**Define a sequence to be bitonic if it strictly increases up to some index k, then strictly decreases from k onwards.  Find the longest bitonic subsequence of a given sequence.**
+
+Use the original DP solution to the longest nondecreasing subsequence problem to generate DP arrays for the longest increasing and longest decreasing subsequence problems.  However, the trick is, for the longest decreasing subsequence problem, we want to solve it in reverse so our DP array holds the length longest decreasing subsequence from index i to the end of the array, for each index i in the array.  The longest increasing subsequence array is computed normally, and so holds the length of the longest increasing subsequence from the start to index i, for each index i in the array.
+
+Now we can find the longest bitonic subsequence by iterating through each index in the array, computing the length of the longest bitonic subsequence with peak at index i as the sum of the lengths in the two DP arrays at index i (minus 1, since they share a common value).  Recover the sequence as in previous problems.
+
+Time and space complexities are O(n<sup>2</sup>) time and O(n) space as before.
+
+---
+
+**Define a sequence of points in the plane to be ascending if each point is above and to the right of the previous point.  Find a maximum ascending subset of points in the plane.**
+
+Sort points by y coordinate, and now the problem is reduced to finding the longest increasing subsequence on x coordinates.
+
+Still O(n<sup>2</sup>) time and O(n) space.
+
+---
+
+**Compute the longest nondecreasing subsequence in O(n log(n)) time.**
+
+If your spider senses were tingling this whole time that it seems kind of inefficient to use O(n<sup>2</sup>) time for all these algorithms, good!
+
+A good thing to do when you see a problem and have sketched out a rough algorithm is to then write out what operations you need.  In our case we need the following, where value means *last value of the subsequence*:
+ - Look up largest length associated with value <= given value
+ - Insert new length and value
+ - Potentially deleting or updating (value, length) pairs by length or value (not sure yet)
+
+This should be *almost* looking like an amazing candidate for a BST, except that first operation which is quite tricky.  However, let's think about that a little more carefully. Why couldn't we just look up the largest value and use that?  Well, because the length of a sequence ending in some large value may actually be less than the length of a sequence ending in some smaller value.  But hold on!  If that were the case, why would that shorter but larger-end-value sequence ever be useful to us?  It wouldn't! It serves only to complicate our algorithm.  So how about we assume we will always throw out a sequence if another sequence catches up to it in length but has a smaller end value?  Then with this in play, the first criteria above becomes:
+ - Look up largest (length, value) pair, which we know *must* have both the largest length and the largest value among all items in the data structure
+
+Okay, now a BST seems perfect.  It's still not clear if lengths or values should be our key: let's run through a quick example and hopefully that should answer our question and build a nice picture of how our algorithm will work.
+
+Input array = `[0, 5, 3, 6, 2, 4, 5]`.  Initialize empty BST of (end_value, length) pairs - not sure which is the key yet.
+ - Encounter value `0`.  Check BST for largest item with end_value <= 0.  Okay, the BST key needs to be end_value.  No value found, so we start a new sequence.  Insert (end_value = 0, length = 1) into BST.
+ - Encounter value `5`.  Search BST for largest item with end_value <= 5.  Find (end_value = 0, length = 1). Insert (end_value = 5, length = 2) into BST.  Note, we didn't overwrite the previous pair, but inserted a new one, because if in the future we find a value that could use that end_value = 0 sequence, we want to make sure we keep that option available.
+ - Encounter value `3`.  Search BST for largest item with end_value <= 3.  Find (end_value = 0, length = 1) - now we're glad we saved this one as well rather than overwriting it.  Insert (end_value = 3, length  = 2) into BST.
+   - Now we have two sequences in our BST with length 2!  We need a way to detect that and delete the one with higher end_value (because it's never better than the one of same length and lower end value).  How can we do that?  A common trick when working with BSTs is to keep around a sort of inverse hash map - in this case we can keep a hash map from lengths to BST nodes (or lengths to end_values, time complexity will be the same in this case but it is "more" computation).
+   - Okay, rewind.  So whenever we inserted a node into our BST, we also needed to insert the (length, BST node) pair into our hash map.  Let's suppose we did that up to this point.
+   - So we've just decided we want to insert (end_value = 3, length = 2) into the BST.  Let's rewind to right before we did that.  Look up length = 2 in the hash map -> find end_value = 5 corresponds with this length.  Since our new end_value is 3 which is less than 5, delete this old node from the BST, insert (end_value = 3, length = 2) into the BST, and update the hash map to map length 2 to our newly inserted node.
+ - Encounter value `6`.  Search BST for largest item with end_value <= 6.  Find (end_value = 3, length = 2).  Check for length 3 in hash map, doesn't exist, insert (end_value = 6, length = 3) into BST and add newly inserted node into hash map.
+ - Encounter value `2`.  Search BST for largest item with end_value <= 2. Find (end_value = 0, length = 1).  Check for length 2 in hash map -> exists with end_value = 3.  Current value is less than 3 so delete corresponding node from BST, insert (end_value = 2, length = 2) into BST, and update hash map with newly inserted node.
+ - Encounter value `4`.  Search BST for largest item with end_value <= 4.  Find (end_value = 3, length = 2).  Check for length 3 in hash map, find end_value = 6. Since 6 is greater than 4, delete that node from BST and insert new node (end_value = 4, length = 3). Update hash map with newly inserted node.
+ - Encounter value `5`.  Search BST for largest item with end_value <= 5. Find (end_value = 4, length = 3).  Check for length 4 in hash map, not found.  Insert new node in BST (end_value = 5, length = 4). Update hash map with newly inserted node.
+ - Done processing array.  Iterate from length of input array down to 1, searching for the first length found in the hash map.  This is the length of the longest nondecreasing subsequence in the input array.
+
+Okay, so we ironed out most of the details.  The BST will take (end_value, length) pairs with end_value as the key.  The hash map will map lengths to BST nodes.  Before each insertion into the BST, we always check if a node alraedy exists with the same length, and keep only the better option.
+
+However, we're still missing a way to recover the sequence in the end.  As you may have noticed by now, given the way these DP algorithms work, it's generally easiest to store an inverse mapping of the sequence that tells you where you came from at each position, and then you can recover the sequence in reverse once the algorithm is complete.  So we can keep an extra array that just stores the index of the previous element in the optimal subsequence, for each position in the array. But in order to know this information as we are running the algorithm, our BST (or an additional hash map) will need to additionally store the previous index for each node, so the data will be (end_value, length, previous_index).  Then whenever we look up the maximum value in our BST, we can store that previous_index in our previous index array so we will be ready to unwind the sequence at the end of the algorithm.
+
+One last thing: we don't quite know where the longest subsequence will end in the array.  It very likely will not be the last element.  So at each step of the algorithm, let's just track max_subsequence_length and longest_subsequence_end_index.  Then at the end we can start our reverse subsequence unwinding at longest_subsequence_end_index.
+
+To analyze the time complexity, we do n steps (process each element in the input array once), and for each step perform various binary tree single-node operations, which gives O(log(n)) time for each of those steps.  At the end we just retrace the longest subsequence path so that takes O(n) time.  This yields O(n log(n)) time complexity.  Space complexity will be O(n) for our various data structures, each of which stores at most a single item per element from the input array.
+
+---
