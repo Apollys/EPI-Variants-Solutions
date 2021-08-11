@@ -504,4 +504,6 @@ One last thing: we don't quite know where the longest subsequence will end in th
 
 To analyze the time complexity, we do n steps (process each element in the input array once), and for each step perform various binary tree single-node operations, which gives O(log(n)) time for each of those steps.  At the end we just retrace the longest subsequence path so that takes O(n) time.  This yields O(n log(n)) time complexity.  Space complexity will be O(n) for our various data structures, each of which stores at most a single item per element from the input array.
 
+See my source code for this algorithm here: [longest_nondecreasing_subsequence_optimal.cpp](https://github.com/Apollys/EPI-Variants-Solutions/blob/main/Ch_16_Dynamic_Programming/longest_nondecreasing_subsequence_optimal.cpp)
+
 ---
