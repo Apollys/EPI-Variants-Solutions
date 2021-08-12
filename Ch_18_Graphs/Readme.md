@@ -172,3 +172,22 @@ Or, to simplify out the exponentiation part of the question, we need the shortes
 TODO: I've noticed that looking for multiples of 3 tends to be a good strategy here.  Investigate if there's some tricks based on that which can work here.  (For example: 15, 27, 30, all work better by splitting into 2/3 + 1/3 than using powers of 2.  Even 31 works better as 30 + 1 and splitting the 30 into thirds.)
 
 ---
+
+**Given a set of tasks, each task potentially having prerequisite tasks that must be completed before it can start, and the time required for each task to complete, compute the minimum number of time required for all the tasks to be completed if you have an infinite number of workers available.**
+
+First, we check for cycles using the directed graph cycle-checking algorithm.  If a cycle is found, we can return some sentinel value to indicate the tasks cannot be completed.
+
+Next, find the set of all vertices with no incoming edges (no prerequisites).  This is our starting set.  We will also track a `prerequisite_time` value for each node (in a map from nodes to time), and a visited node set.  Initialize the prerequisite time to 0 for all nodes in the starting set.  Using a queue to hold the fringe/frontier node set, expand through the tree in BFS fashion, updating `prerequisite_time` and `visited_node_set` for each new node visited.  Before visiting a node, we always make sure all its prerequisites are in the visited node set.  Whenever we visit a new node, we update its neighbors' prerequisite_time to the current node's prerequisite time plus its task's duration.  Once we visit the last node for the first time, we compute its completion time as before and we are done.
+
+If we analyze the time complexity of this algorithm, the important part is the following:
+ - At each step, we iterate through a queue of potentially O(n) nodes (let n = number of nodes, for simplicity of notation).  In the worst case, we may actually need to iterate through O(n) of these nodes at each step.
+ - For each of these O(n) nodes we iterate through, we check if their prerequisites are satisfied.  This could take potentially O(n) time for each.
+ - Perform this step O(n) times, since each step just visits one node.
+
+This gives us three O(n) factors multiplied together, for O(n<sup>3</sup>) time complexity in total, which seems kind of slow.  It seems especially bad that we're iterating through a queue of size O(n), and then for each doing a prerequisite check that takes O(n) time.  We should be able to do better than O(n<sup>2</sup>) for the combination of these actions.
+
+The key observation is that a prerequisite check really shouldn't take O(n) time - this should be an O(1) operation.  We can accomplish this by keeping a prerequisite set for each node, and removing a node from the prerequisite sets of all its successors when we visit it.  This adds an extra O(n) * O(1) time complexity to visiting a node, which is fine, because in total that will yield O(n<sup>2</sup>) time, which is what we're aiming for.
+
+With this little modification, we've brought the prerequisite check down to O(1), bringing the runtime of the entire algorithm down to O(n<sup>2</sup>).  Space complexity is O(|V| + |E|) to store information about nodes (|V|) and prerequisites (|E|).  This reduces to O(n<sup>2</sup>) as well, since |E| can be O(|V|<sup>2</sup>) when there are lots of prerequisites (even in a feasible task set this is possible).
+
+---
