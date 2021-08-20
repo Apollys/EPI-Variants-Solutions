@@ -1,4 +1,4 @@
-# Elements of Programming Interviews: <br>Solutions to Variants with Explanations and Analysis Write-ups
+# Elements of Programming Interviews: <br>Solutions to Variants with Explanations and Analysis
 
 ![image](https://user-images.githubusercontent.com/37650759/128461145-53ef354a-78d0-47de-9d6b-fb71cec8344e.png)
 
