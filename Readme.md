@@ -12,7 +12,6 @@ Click a folder above to browse solutions by chapter.
 ---
 
 TODO:
- - [ ] Chapters 19 Variants
  - [ ] Add code for Chapter 9 - construct max tree problem
  - [ ] Complete TODOs in Dynamic Proramming chapter
  - [ ] Chapter 4 Variants (Maybe)
