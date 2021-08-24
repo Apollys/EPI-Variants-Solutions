@@ -81,5 +81,59 @@ But remember this is only half the solution.  What if we had a value like `x = 0
 
 An easy method is if `x`'s rightmost bit is 0, we look for the rightmost 1, and otherwise (when `x`'s rightmost bit is 1) we look for the rightmost 0.  Either way, we toggle the two adjacent bits using xors with the mask as described above.
 
+Note: the book also gave a formula for extracting the lowest set bit in x: `x & ~(x - 1)`.  You can definitely use this formula instead, and it would actually be fewer operations in total.  However, in case you didn't have that formula handy, I wanted to show when felt like a more natural derivation (to me anyway).  It's also important to realize that these bit fiddling problems will usually have many different solutions - and for almost everyone, any solution is good.  There are much more valuable things to do with your time than worrying about counting CPU instructions for some bit twiddling algorithm that's going to be super fast either way.
+
 ---
 
+**Write a primitive division algoriothm for signed integers - only addition, subtracting, and shifting allowed**
+
+Given the solution for unsigned integers, we can just compute the sign bit, then convert the values to positive integers and reuse the previous solution.  We negate the quotient in the end if the computed sign bit is 1:
+
+```c++
+int Divide(int x, int y) {
+    bool quotient_negative = (x < 0) ^ (y < 0);
+    int unsigned_quotient = DividePositive(std::abs(x), std::abs(y));
+    return quotient_negative ? -unsigned_quotient : unsigned_quotient;
+}
+```
+
+---
+
+**Given four points in the plane, check if they are the vertices of a rectangle.**
+
+We must start by thinking about what it means to be a rectangle.  It may be easier to think conversely, what sets of vertices do *not* form a rectangle?  Well, if the angles aren't all right angles, it's not a rectangle.  And that's the only scenario in which it's not a rectangle.  So we just need to check if all angles are right angles.
+
+There's one little subtlety though, we need to make sure we choose a valid ordering of our points.  For example, suppose we had the rectangle ABCD:
+
+```
+A-----B
+|     |
+D-----C
+```
+but our function was called as `IsRectangle(A, C, B, D)` or `IsRectangle(A, B, D, C)`.  We would have to reorder the points to a clockwise or counterclockwise sequence first.  We can do this by picking a vertex with minimum y coordinate first, and sorting all points by angle relative to that point.  (This is a nice trick to have in your belt, as it applies to much more general scenarios like the class Convex Hull problem).  The reason we picked minimum y as our anchor point is that all angles relative to it will be positive, so we don't have to worry about any angle wraparound issues.
+
+Now that we have the points in order, we need to check that adjacent pairs of sides form right angles.  Adjacent pairs of sides are formed by the two vectors from a vertex v to the vertices before and after v.  To check if two vectors are perpendicular, we can check if their dot product is zero.  (Note: you might have thought here to use the formula for included angle between two vectors: `cos(theta) = (v • w) / (|v||w|)`, which is a good instinct.  But notice here as a slight optimization - when theta = 90 degrees, the cosine is zero, therefore `(v • w) / (|v||w|) = 0` and so we can skip the division by the product of magnitudes as well as the inverse cosine operation with a little cleverness.)
+
+---
+
+**Check if two rectangles (not necessarily axis-aligned) intersect.**
+
+In the most general case, under what conditions do two rectangles in a 2d plane intersect?
+
+Firstly, they intersect if any of their sides intersect.  Does this cover everything? Is there another case where they intersect?
+
+Yes. What if one rectangle is completely inside another rectangle?  Then they also intersect, but no edges intersect.
+
+And this is guaranteed to cover all cases.  For two rectangles R1 and R2 to intersect, they must have some common region.  Let R1 be the smaller of the two rectangles (i.e. area(R1) <= area(R2)).  Then that common region will either be all of R1 or not all of R1.  If it is all of R1, then R1 is completely contained in R2.  If it is not all of R1, then there is some region of R1 that lies outside R2, but also some region of R1 that lies inside R2. Therefore the borders of R1 and R2 must intersect.
+
+So our algorithm needs two components:
+ 1) Check if two line segments intersect
+ 2) Check if a rectangle is completely contained inside another rectangle
+
+To solve subproblem 1, we start by checking if the two lines (not segments) intersect using basic algebra.  Then we can check if the point of intersection is on both line segments.  If the lines are the same (have infinitely many intersection solutions), we can skip this second step.
+
+To solve subproblem 2, we need to determine if all the vertices of R1 lie inside R2.  To check if a point lies inside a rectangle, we need a way to see which side a point is relative to a line segment determined by a vector.  Then p lies inside rectangle ABCD if and only if `orientation(p, AB) == orientation(p, BC) == orientation(p, CD) == orientation(p, DA)`.
+
+If we start thinking about how to write this function, we'll see it will actually be easier to write the function signature as `orientation(p1, p2, p3)`, taking the three points as input.  Then we can just compute the cross product of the vectors `p1->p2` and `p2->p3`, recalling that the sign of the cross product gives us the orientation of the vectors (remember your right hand rule).  Note that we could have also used `p1->p3` as the second vector.
+
+---
