@@ -215,9 +215,24 @@ With this ambiguity out of the way, we once again have extracted the correspondi
 
 ---
 
-**Construct max tree in linear time.**
+**Given an array of integers A, construct the max tree of A in linear time.  The max tree is defined to be the tree such that the root has value max(A), and the left and right subtrees are the max trees on the left and right subarrays created by splitting A at the maximum element (excluding the maximum element from both left and right halves).**
 
-There's not really any trick here - write out a random sequence of numbers and add these numbers to the tree one at a time.  Pay careful attention to how you would add the next node given that you're tracking the position of the most recently added node.  For example, if the new value is less than the most recently added node, you can just add it as a right child.  Otherwise you need to insert it above the most recently added value, and make the most recently added value its left child.  However, in general you may not just need to go one step up, you will need to go up until you find a node whose parent is not greater than the value you are inserting (or which has no parent, which would be the case if the value to be inserted is the new maximum).  Finally, you make the node you are replacing the left child of the inserted node.
+First note that a somewhat more usable definition can be teased out of this by playing with some examples.  Let's see what the max tree looks like for a short sequence, `A = [6, 1, 4, 2]`:
+```
+6          6             6                6
+            \             \                \
+             1             4                4
+                          /                / \
+                         1                1   2
+```
+
+We'll notice as we're adding elements into the max tree, that what we're really trying to do is build a tree such that each node's value is always greater than or equal to its children's values, and the inorder traversal sequence (which can be thought of as the left->right node ordering, independent of height) is the same as the input array sequence.
+
+With this in mind, now try writing out a longer sequence of random numbers and adding them into the tree one at a time.
+
+Algorithmically, there's not really any clever trick or mathematical insight here.  It just comes down to precise, methodical logic.  As you're building the max tree, pay careful attention to how you would add the next node given that you're tracking the position of the most recently added node.  For example, if the new value is less than the most recently added node, you can just add it as a right child.  Otherwise you need to insert it above the most recently added value, and make the most recently added value its left child.  However, in general you may not just need to go one step up, you will need to go up until you find a node whose parent is not greater than the value you are inserting (or which has no parent, which would be the case if the value to be inserted is the new maximum).  Finally, you make the node you are replacing the left child of the inserted node.
+
+To double check or help debug your own code, you can compare it with my implementation here: [max_tree.cpp](https://github.com/Apollys/EPI-Variants-Solutions/blob/main/Ch_09_Binary_Trees/max_tree.cpp).
 
 At first glance, the time complexity of this algorithm may not seem linear, because we have to "go up until we find a node with X property" on every step of the insertion.  And this "going up" action seems it could potentially take O(height) time, and since this tree has no guarantees about balance, that would be O(n), so wouldn't the entire runtime be O(n<sup>2</sup>)?
 
