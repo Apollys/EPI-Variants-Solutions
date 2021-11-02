@@ -221,6 +221,8 @@ With this insight in mind, the only extra case we have to handle is fish values 
 
 It would give us a worse solution if at some point the fish value at our current square was more negative than the total positive fish values accumulated so far, so our cumulative fish value becomes negative.  At this point, we would be better off not using this path, but starting at the next square instead.  So our update will be `max_value[i, j] = fish_value[i, j] + max(0, max_value[i-1, j], max_value[i, j-1])`, where we've added in a max(0, ...) to just say, if all our options are negative, start a new path here instead.
 
+The final answer will be the largest value in our `max_value` DP array, which we can compute as we fill it (so we cana void storing the full m x n array in memory).
+
 Still O(mn) time and O(min(m, n)) space.
 
 ---
