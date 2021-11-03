@@ -234,9 +234,20 @@ x x       x Q x     X x x x
 
 It's pretty clear that our solutions here for n = 2 to 4 are optimal.  Now try drawing out some examples of n = 5 to see if you can cover all the squares without adding another queen from the n = 4 solution.  With a little experimentation, you'll see that it can't be done.
 
-I haven't tried to write up a formal proof of this (again because I don't think this problem is very valuable), but I do remember spending a reasonable amount of time drawing up a bunch of examples for chessboards up to n = 8 and convincing myself that there's nothing better to do than just trivially adding a queen to the corner each time you increment n past 3.
+The n = 6 case is where things get tricky.  There is actually a 3-queen solution that covers a 6x6 board:
 
-Thus, my solution is *max(1, n - 2)*.  This is not a programming question at all, more of a geometry/logic puzzle, which is why I won't spend too much time on it here.
+```
+Q X X X X X       Q X X X X X       Q X X X X X
+X X o o o o       X X o x x x       X X + x x x
+X o X o o o       X x X x Q x       X x X x Q x
+X o o X o o       X o o X x x       X + + X x x
+X o o o X o       X o x o X o       X + Q + X +
+X o o o o X       X x o o x X       X + + + x X
+```
+
+So at this point it's fair to conclude that there's no simple mathematical formula for the solution; or if there were a formula, it would be well out of the scope of a programming question.  Unfortunately, programmatically, there doesn't appear to be any reasonable algorithm better than brute force either.  It turns out this question has actually been studied in depth, and you can read more about it [here](https://stackoverflow.com/a/13174576/7022459).  The synopsis is that there is no known algorithm for finding the optimal solution other than brute force searching.
+
+With that in mind, I doubt this question would come up in an interview, and I don't think this question is worth worrying about too much.  With no room for creative problem solving or optimization, this problem offers little and one's time is probably better spent solving other problems.
 
 ---
 
