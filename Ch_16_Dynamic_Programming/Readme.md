@@ -459,6 +459,10 @@ We continue in this way, replacing the 8 with a 9, the 9 with a 9, and then fina
 
 Looking more generally at this process we've walked through, we can see why this problem is actually simpler than the longest non-decreasing subsequence case.  There is always a best choice now, which also never sacrifices any future options.  In other words, we have a greedy algorithm that's guaranteed to find the optimal solution.  A cool way of looking at this is that we have broken up the full input sequence into alternating runs of increasing and decreasing values, and then pulled out one representative - the final element - of each of these runs to constitute our ultimate solution. Looking at it this way, it's clear that we can't have missed anything, our solution must be optimal, and it must be valid.
 
+The time complexity is O(n), as we just walk through the input array once.
+
+The space complexity is exactly the size of the solution, or O(n) in general.
+
 I have written up the C++ code for this algorithm here: [longest_alternating_subsequence.cpp](https://github.com/Apollys/EPI-Variants-Solutions/blob/main/Ch_16_Dynamic_Programming/longest_alternating_subsequence.cpp)
 
 Bonus: if you wanted to eliminate the restriction that the alternating sequence must start with an increasing pair of elements (i.e., allow it to start decreasing also), how would you approach this?
