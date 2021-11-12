@@ -433,11 +433,39 @@ Complexities are the same as the example: O(n<sup>2</sup>) time and O(n) space.
 
 **Find a longest alternating subsequence of a given array. (Alternating means a\[i] < a\[i+1] for even i and a\[i] > a\[i+1] for odd i.)**
 
-This is going to be the same algorithm as finding the longest nondecreasing subsequence, but now our comparison operator depends on the length of the sequence that we look up in the DP array.  So suppose we are currently at the value 10.  If the DP array gives us a length of 4 ending at index j, we have to check that the value in the input array at position j is less than the value at the current index in order for it to count as a valid subsequence candidate.  If, however, the length in the DP array were 5, the comparison operator would be flipped.
+We can start by viewing this problem as an extension of the previous problem.  So we use the same algorithm as finding the longest nondecreasing subsequence, but now our comparison operator depends on the length of the sequence that we look up in the DP array.  So suppose we are currently at the value 10.  If the DP array gives us a length of 4 ending at index j, we have to check that the value in the input array at position j is less than the value at the current index in order for it to count as a valid subsequence candidate.  If, however, the length in the DP array were 5, the comparison operator would be flipped.
 
 Retrieving the sequence at the end will be identical to the above problem.
 
 Time and space complexities are still the same: O(n<sup>2</sup>) time and O(n) space.
+
+However, perhaps counterintuitively, this problem is actually *easier* to solve than the above problem.  In fact, using dynamic programming here is rather akin to using a sledgehammer to drive in a small nail.  Forget the title of this chapter, forget the previous problems we've just worked on.
+
+Approach this problem as a new problem, with a clean slate, and see if you can find a more efficient solution.
+
+* * *
+
+Okay, let's start by writing up an example sequence.  When designing our example, we want to make sure we cover cases where the sequence alternates back and forth immediately, as well as cases where there are runs of consecutive increasing or decreasing values.  Additionally, we make sure to cover the case where we have repeated consecutive elements, to make sure we handle equality correctly.
+```
+[4, 2, 7, 8, 8, 9, 9, 3, 2, 3, 5, 4]
+```
+If we start walking through the array from the left, we encounter `4, 2`.  By the problem definition, we are looking for an increasing pair of values to start the sequence, so we know for sure we can't start with these two values.  But if we wanted to keep one of them to start our sequence, which should we pick?
+
+We select `2`, because it is lesser, and therefore less restrictive when it comes to finding a subsequent value that is greater.  And number greater than 4 is certainly greater than 2, but not vice versa. So we don't lose any possible solutions by throwing away the 4, and just holding onto the 2.
+
+Next we encounter a 7, which satisfies the criteria we are looking for, so we keep the 7.  Let's call this place we're keeping these values our working solution vector. Our working solution vector currently contains: `[2, 7]`, and we are now looking for a value less than 7.  The next value is 8, which is not less than 7.  But, because it's not less than 7, that means finding a value less than this new value 8 is guaranteed to be easier, or as easy (if the values were equal), as finding a value less than 7.  So we replace the back element of our working solution vector with this new value, giving: `[2, 8]`.  Next we come across another 8, and this is where the equality case comes in.  By our logic above, we can handle this case uniformly with the previous case, so we just replace the back element (8) with the new element (also 8) as before.  (It may seem trivial now, but making note of these things will be a big help when it comes to writing clean and simple code.)
+
+We continue in this way, replacing the 8 with a 9, the 9 with a 9, and then finally we find a 3, which is in fact less than the 9.  Temporary solution vector becomes `[2, 9, 3]` and we're looking for a value greater than 3 now.
+
+Looking more generally at this process we've walked through, we can see why this problem is actually simpler than the longest non-decreasing subsequence case.  There is always a best choice now, which also never sacrifices any future options.  In other words, we have a greedy algorithm that's guaranteed to find the optimal solution.  A cool way of looking at this is that we have broken up the full input sequence into alternating runs of increasing and decreasing values, and then pulled out one representative - the final element - of each of these runs to constitute our ultimate solution. Looking at it this way, it's clear that we can't have missed anything, our solution must be optimal, and it must be valid.
+
+I have written up the C++ code for this algorithm here: [longest_alternating_subsequence.cpp](https://github.com/Apollys/EPI-Variants-Solutions/blob/main/Ch_16_Dynamic_Programming/longest_alternating_subsequence.cpp)
+
+Bonus: if you wanted to eliminate the restriction that the alternating sequence must start with an increasing pair of elements (i.e., allow it to start decreasing also), how would you approach this?
+
+The obvious way is just with two passes, run the above algorithm once starting by looking for increasing first, and once starting by looking for decreasing first.  But this is quite unnecessary, can you do it in one pass?
+
+We can just start by looking for the first pair of non-equal consecutive elements.  Based on their ordering, we set our boolean indicating whether we're looking for increasing or decreasing values next, and continue with the algorithm exactly as described above.
 
 ---
 
