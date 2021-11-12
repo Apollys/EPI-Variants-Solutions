@@ -57,7 +57,7 @@ std::vector<T> ComputeLongestAlternatingSubsequence(const std::vector<T>& input_
 }
 
 int main() {
-    std::vector<int> test_vector{4, 2, 7, 8, 9, 3, 2, 3, 5, 4, 1, 9, 2, 1, 4, 1, 7, 8};
+    std::vector<int> test_vector{4, 2, 7, 8, 8, 9, 9, 3, 2, 3, 5, 4, 1, 1, 1, 9, 2, 1, 4, 1, 7, 8};
     
     std::vector<int> result_vector = ComputeLongestAlternatingSubsequence(test_vector);
     
