@@ -41,17 +41,13 @@ std::vector<T> ComputeLongestAlternatingSubsequence(const std::vector<T>& input_
         const auto compare_func = [looking_for_greater](const T& left, const T& right) {
             return looking_for_greater ? left < right : left > right;
         };
-        // If values are equal, do nothing, move on
-        if (result_vector.back() == current_value) {
-            continue;
-        }
         // If we found the ordering we're looking for, add new value to result vector
         // Also, toggle the looking_for_greater flag!
-        else if (compare_func(result_vector.back(), current_value)) {
+        if (compare_func(result_vector.back(), current_value)) {
             result_vector.push_back(current_value);
             looking_for_greater = !looking_for_greater;
         }
-        // Otherwise, we found consecutive increase/decrease, so we replace
+        // Otherwise, we found consecutive increase/decrease (or equal value), so we replace
         // last value of subsequence with newly found (less restrictive) value
         else {
             result_vector.back() = current_value;
