@@ -49,7 +49,7 @@ Space complexity is O(n) for the sorted angles.
 
 **\[Example Problem] Three sum problem - given an array and a target sum, find if any three values in the array sum to the target sum.  Repeated uses of the same element are allowed.**
 
-Note: this is the example problem, not the variant.  I wanted to start with it because there is a much simpler algorithm than the book's algorithm that has the same time complexity.  You can just iterate through pairs of values a\[i], a\[j] in the array, at each step checking if the missing value to make the target sum exists in the array (targete_sum - a\[i] - a\[j]).  This existence check can be done in O(1) time with a hash set of values in the array.
+Note: this is the example problem, not the variant.  I wanted to start with it because there is a much simpler algorithm than the book's algorithm that has the same time complexity.  You can just iterate through pairs of values a\[i], a\[j] in the array, at each step checking if the missing value to make the target sum exists in the array (target_sum - a\[i] - a\[j]).  This existence check can be done in O(1) time with a hash set of values in the array.
 
 This gives us O(n<sup>2</sup>) time for the pairwise iteration and O(n) time for the hash set.  Now, the book claims their algorithm uses O(1) space, but they sorted the input - so it's not really O(1) space.  They're re-using the O(n) input space to organize the data in a different way, and if the input were `const` then they would need to explicitly allocate an extra O(n) space for the sorted array.
 
@@ -100,11 +100,30 @@ Then the hash set that contains k/2-sums can be modified to also store the indic
 
 **Fuzzy 3-sum problem - given an array and a target sum, find the set of 3 distinct elements in the array that sum to the nearest value to the target sum.**
 
-So let's outline precisely the way in which this differs from the original 3-sum problem.  In the original problem, we had a current_sum, then computed missing_value = target_sum - current_sum, and then wanted to check if missing_value existed in the input array.  Now, that's all the same, except instead we want to find the nearest value to missing_value, rather than checking if it exists.  What's a good data structure for finding the nearest value to something?
+First, I'm going to start by brainstorming a couple ideas.  A (semi) brute-force solution that we can come up with right away is to compute all sums of pairs, then sort them (or store them in a BST), and then for each value in the input array, find the nearest value to `target_sum - current_value` in the sorted array (or BST).  This will require O(n<sup>2</sup>) space to hold the precomputed pair sums, O(n<sup>2</sup> log(n)) time to sort these precomputed sums, and then O(n log(n)) time to find the optimal value in the sorted array (or BST) per input value.  This gives us a nice baseline to beat: O(n<sup>2</sup> log(n)) time and O(n<sup>2</sup>) space.
 
-Binary search tree.  Let's store the values of the original array in a BST.  Then for each pair of values in the array, we search for the nearest value to the missing value in the BST.  Again, we can use a hash map of value counts to see if we're using more instances of a value than existed in the original array.  If we are, we move to the next nearest value in the BST.  Once we find our 3 valid values, if the error for this 3-sum is less than our previous best, store this as our best 3-sum triplet.
+We can flip around what we save in the sorted array or BST, and what we are iterating through.  This saves us space complexity, because the iteration absorbs the O(n<sup>2</sup>) part of the algorithm instead: We simply build a sorted array or BST of the input values (O(n log(n)) time and O(n) space) and iterate through pairs of input elements, finding the nearest value to `target_value - value_1 - value_2`.  This keeps the same time complexity, but reduces space complexity to O(n).  So the question is, can we eliminate this log(n) factor in the time complexity?
 
-Analyzing the complexities, it takes O(n log(n)) time to build the BST, and O(n) space.  The hash map of counts takes O(n) time and space.  The iteration through the pairs of values has O(n<sup>2</sup>) steps, and at each step does fixed number of searched in the BST, taking O(log(n)) time, so the whole iteration takes O(n<sup>2</sup> log(n)) time.  The final time complexity will thus be O(n<sup>2</sup> log(n)) and the final space complexity will be O(n).
+Let's start with an observation: as with the original 2-sum and 3-sum problems, we can always solve a 3-sum problem by re-using the 2-sum solution and adding an O(n) factor.  We know that 2-sum can be solved in linear time, but since our 3-sum problem is now a fuzzy-3-sum problem, we need a fuzzy-2-sum solution now.  So let's focus in on the fuzzy-2-sum problem, and see if we can find a linear time solution.
+
+Storing values in a hash set isn't going to help here, because we are looking for fuzzy solutions.  And searching in a BST every time isn't going to work either, because it adds the extra log(n) factor to our runtime.  So we're looking for a way to walk through the array, finding the pair of values whose sum is nearest a given target.  Let's pre-sort the array since we only have to do that once, and in the larger scope of the 3-sum problem, a single O(n log(n)) operation will be trivial.  Now how do we walk through the sorted array?
+
+Instead of starting with our two indices right next to each other, let's start with one at the beginning and one at the end.  This way, if the sum is too big, we can decrement the right index, and if the sum is too small, we can increment the left index.  Since everything is sorted, incrementing an index is guaranteed to increase the sum, and decrementing an index is guaranteed to reduce the sum.  We'll store the best pair as we go, and terminate when the indices meet.  But does this guarantee we find the optimal pair?
+
+We might be worried about some situation such as the following arising, in which we found a pair (labelled "lesser pair" below) but the optimal solution was some other pair (labelled "greater pair" below):
+
+```
+        lesser pair
+     _________________
+    |                 |
+a b c d e f g h i j k l m n o p q
+        |_________________|
+       greater pair - optimal
+```
+
+Since the solution we found was "lesser pair", at some point our left index advanced to `c`.  If, at this point, the right index was at or to the right of `n`, it would have been decremented until it reached `n` (since the left pointer could no longer move).  
+
+**TODO** - finish this proof
 
 ---
 
