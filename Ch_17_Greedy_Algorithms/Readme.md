@@ -136,7 +136,7 @@ C is the current pair, G* is the optimal pair, and L is the suboptimal pair we e
  - T < C, because we chose to decrement at C
  - L < C < G*, due to index positions (and sorted order of array)
 
-Combining these together gives an immediate contradiction: T < C < G*, so C is a better solution than G*.  This is impossible, since G* was defined to be optimal.
+Combining these together gives: T < C < G*, which implies C is a better solution than G*.  This is impossible, since G* was defined to be optimal.
 
 We're not quite done, remember all this was done under the hypothesis "If, at this point, the right index was at or to the right of `n`".  The more general picture looks like this:
 
@@ -155,11 +155,13 @@ Suppose at this point, we decrement the right index, losing the opportunity to e
  - T < C < G*, combining the above two
  - L < G*, by index positions and sorted order
 
-In this case we don't know the relative ordering of L and T.  If L > T, then we have T < L < G*, which means L is a better solution than G* (contradiction). If L < T, we have L < T < C < G*, giving C as a better solution than G* (contradiction again).  And of course, if L equals T, it's the guaranteed optimal solution, which is once again a contradiction.  So finally, we can say that this situation cannot occur, thus we are guaranteed to find the optimal pair of values with this algorithm.
+In this case we don't know the relative ordering of L and T.  If L > T, then we have T < L < G*, which means L is a better solution than G* (contradiction). If L < T, we have L < T < C < G*, giving C as a better solution than G* (contradiction again).  And of course, if L equals T, it's the guaranteed optimal solution, which is once again a contradiction.  So finally, we can say that this situation cannot occur, thus we are guaranteed to find the optimal pair of values with this algorithm.  (Note: this is not a 100% complete proof, but it covers all the critical insights and logic - feel free to get out your notebook, flesh out the details, and plug the holes if there's anything bothering you after reading this.)
 
 So we have an O(n) runtime algorithm for finding the solution to the fuzzy 2-sum problem, given a sorted input array.  The space complexity here is O(1).
 
-Inserting this back into the the fuzzy 3-sum problem, we get O(n log(n)) time to sort the input, followed by n * O(n) time for the n iterations of the fuzzy 2-sum solution.  This gives a final time complexity of O(n<sup>2</sup>).  Space complexity is O(n) to store the sorted array, or O(1) if the input array is allowed to be sorted in-place. (Often times we want our inputs to be `const`, so it's important to note that sorting your input should be considered O(n) space in the most general case.  However, sorting is often not a bad thing, in which case that extra space is not required.  A common situation in which sorting could be undesirable is one in which we have pairs, triplets, or structs holding many values inside. You may want to sort by a certain value for your algorithm, but someone else may want to sort by a different variable for their algorithm in a different part of the pipeline.)
+Inserting this back into the the fuzzy 3-sum problem, we get O(n log(n)) time to sort the input, followed by n * O(n) time for the n iterations of the fuzzy 2-sum solution.  This gives a final time complexity of O(n<sup>2</sup>).  Space complexity is O(n) to store the sorted array, or O(1) if the input array is allowed to be sorted in-place.
+
+(Note about space complexity and sorting inputs: often times we want our inputs to be `const`, so it's important to note that sorting your input should be considered O(n) space in the most general case.  However, sorting is often not a bad thing, in which case that extra space is not required.  A common situation in which sorting *could* be undesirable is one in which we have pairs, triplets, or structs holding many values inside. You may want to sort by a certain value for your algorithm, but someone else may want to sort by a different variable for their algorithm in a different part of the pipeline.)
 
 ---
 
