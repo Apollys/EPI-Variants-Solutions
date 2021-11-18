@@ -475,13 +475,53 @@ We can just start by looking for the first pair of non-equal consecutive element
 
 **Find a longest weakly alternating subsequence of a given array.**
 
-Same algorithm as above but replace strict inequalities with weak inequalities.
+Naturally, we start by considering applying the above algorithm to this problem.  However, there is a potential worry that arises - when we encounter a pair of adjacent equal values, we could either flip searching for ascending/descending, or not, and these two choices then yield completely different future situations.  It seems the greedy approach could terminate a decision path that may eventually lead to the optimal solution.  Let's investigate with an example:
+
+```
+1 2 2 0 1
+    ^
+```
+
+Here we are at the second 2, currently looking for a weakly descending value.  This 2 could could as either weakly ascending or weakly descending.  Suppose we greedily count it as weakly descending, so now we're looking for weakly ascending values.  The next step in the algorithm looks like:
+
+```
+1 2 2 0 1
+      ^
+```
+
+We encounter a 0, but we're looking for a value greater than or equal to 2.  So the check fails.  But we still use the same trick we used before!  Because the check failed, we know if we use this value (0) instead of the previous value (2), it will make finding the next ascending value easier.  So we utilize this 0 anyway, meaning at the next step when we encounter the 1, it will be checked against 0, pass, and be added to our solution sequence.
+
+So, the same greedy algorithm as above also works in this case.
+
+O(n) time and O(n) space (or more specifically, O(solution size) space).
 
 ---
 
-**Define a sequence to be convex if a\[i] < (a\[i-1] + a\[i+1])/2 for 1 <= i <= n-2.  Find the longest convex subsequence of a given sequence.**
+**Define a sequence of length k to be convex if a\[i] < (a\[i-1] + a\[i+1])/2 for 1 <= i <= k-2.  Find the longest convex subsequence of a given sequence.**
 
-TODO
+The first thing we should do is get an idea of what this definition means.  A sequence is convex if each value is less than the average of its adjacent left and right values.  Visually, this means each point lies below the line segment joining the two neighbors.  This is the discrete analog to a [convex function](https://en.wikipedia.org/wiki/Convex_function):
+
+![ConvexFunction](https://user-images.githubusercontent.com/37650759/142391320-02535b0c-a2cc-40a8-863e-34148c2b0f20.jpg)
+
+With this picture in mind, we might consider starting at the global minimum of the input sequence and working our way outwards from it.  Can you think of a counterexample, a case in which the longest subsequence does not contain the global minimum?
+
+```
+longest convex subsequence
+|‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾|
+11 7 4 2 1 2 4 7 11 0 1
+                    ^
+              global minimum
+```
+
+If we tried to use the global minimum, the longest convex subsequence we could get would be `11 4 1 0 1`.  So this doesn't work.
+
+What if we did something like, at each position, select the leftmost value to the right of the current position that satisfies the convexity requirement?  Well, the problem is, there might be a value farther right that satisfies the convexity requirement, but is less than the value we picked, making the *next* convexity requirement easier to satisfy.  In other words, there's a trade-off: selecting earlier values gives more options for future values, while selecting lesser but later values relaxes the requirement on future values.  Either option could lead to an optimal solution (try to draw a case for each to convince yourself of this), so we can't make a greedy decision like "select the earliest legal next value" or "select the minimum legal next value" -- neither will succeed in general.
+
+With greedy solutions seeming to be doomed for this problem, we switch our attention to dynamic programming.  We might start by thinking to track the longest convex subsequence up to each value in an n-sized DP array.  But remember, the previous values determine the conditions the next value must meet.  So using the longest convex subsequence up to a given value might not produce the longest convex sequence overall, as it may be more restrictive than some shorter convex subsequence - this is the exact problem we discovered with the greedy solution above.  So we need to track more than this.
+
+With tricky dynamic programming problems, there are a couple ways you can go about developing your solution.  One is to try to cleverly guess what the various axes of your DP matrix should represent, and then build the algorithm that fills up this matrix and see if it works.  Another is a more top-down approach: remembering that dynamic programming is motivated by the idea of using recursive solutions while avoiding repeated calculations, we can start by writing a recursive algorithm, and then use that to devise our DP table.
+
+// TODO - finish writing up this solution
 
 ---
 
