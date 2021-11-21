@@ -519,9 +519,75 @@ What if we did something like, at each position, select the leftmost value to th
 
 With greedy solutions seeming to be doomed for this problem, we switch our attention to dynamic programming.  We might start by thinking to track the longest convex subsequence up to each value in an n-sized DP array.  But remember, the previous values determine the conditions the next value must meet.  So using the longest convex subsequence up to a given value might not produce the longest convex sequence overall, as it may be more restrictive than some shorter convex subsequence - this is the exact problem we discovered with the greedy solution above.  So we need to track more than this.
 
-With tricky dynamic programming problems, there are a couple ways you can go about developing your solution.  One is to try to cleverly guess what the various axes of your DP matrix should represent, and then build the algorithm that fills up this matrix and see if it works.  Another is a more top-down approach: remembering that dynamic programming is motivated by the idea of using recursive solutions while avoiding repeated calculations, we can start by writing a recursive algorithm, and then use that to devise our DP table.
+_Finding the Path to the Solution_
 
-// TODO - finish writing up this solution
+With tricky dynamic programming problems, there are a couple ways you can go about developing your solution.  One is to try to cleverly guess what the various axes of your DP matrix should represent, and then build the algorithm that fills up this matrix and see if it works.  Another is a more top-down approach: remembering that dynamic programming is motivated by the idea of using recursive solutions while avoiding repeated calculations, we can start by writing a recursive algorithm, and then use that to devise our DP data structure.
+
+We can write the following formula that might be the starting point for a recursive algorithm:
+
+```
+LongestConvexSubsequence(indices 0 to i) = MaxSequence(
+    LongestConvexSubsequence(indices 0 to i-1),
+    a[i] appended to LongestCompatibleConvexSubsequence(indices 0 to i-1, compatible with a[i]))
+```
+
+Here we define compatibility as `x` is compatible with sequence `S` iff the sequence formed by appending `x` to `S` satisfies the convexity requrement.
+
+We can introduce the idea of a `next_threshold` to make this easy to track: the `next_threshold` for a convex sequence is the value such that any value greater than `next_threshold` is compatible with the sequence (and any value less than or equal to it is not compatible).  We can now apply this concept to our above equation: at each step we need to know the longest convex subsequence we've found so far whose `next_threshold` is less than `a[i]`.  Unfortunately, this suggests that we need to keep track of all convex subsequences as we go - and given that there are exponentially many subsequences of a sequence, this could lead to exponential time and space complexity.  So can we avoid this?
+
+Let's look at a concrete example.  Suppose we have the following convex subsequences found so far:
+
+```
+        length:  2  5  7
+next_threshold:  0  9  4
+```
+
+Do we really need to keep track of all of these sequences?  The last sequences has length 7, which is longer than the length 5 sequence, and its threshold is 4, which is less restrictive than that of the length 5 sequence.  Any value that I could append to the length 5 sequence I could also append to the length 7 sequence to create an even longer convex sequence.  Is there any reason then that the length 5 sequence could contribute to the final longest convex subsequence?
+
+This is quite a tricky question.  If you reflexively said no just because of how I phrased it, pause and think carefully about it.  The `next_threshold` doesn't tell the whole story.  What about the *next* `next_threshold`?
+
+An easier way to think about this is to visualize the slopes of the line segments joining the values in the sequence, and specifically to focus on the slope between the last two values (consider the delta_x to be a fixed constant, e.g. 1, between each sequence value).  Imagine the length 5 sequence has a steeply negative slope between its final two values, while the length 7 sequence has a steeply positive slope between its final two values.  Both sequences will be compatible with the value `10`, for example, but after that, the negative-slope sequence will be compatible with a large interval of values that the positive-slope sequence will not be.
+
+Unfortunately, this makes things very difficult.  We can't only track lengths and slopes, because the slope doesn't tell us whether a value can be legally appended to the sequence (maintaining convexity), and we can't only track lengths and max_thresholds.  But if we have to track both max_thresholds and slopes, there's no clear way to order the sequences or discard certain sequences as inferior to others.  So let's think more about the picture we had in our mind with the slopes above.
+
+_The Insight_
+
+What is a convex sequence really, in terms of slopes?  It's a concave up sequence.  It's a sequence of increasing slopes, these slopes corresponding to the differences between values picked from the input array (*slope* can be substituted with *difference* here because we can consider the delta_x between each consecutive value in a sequence to be 1).
+
+Suppose we precomputed all these slopes/differences, and then tried to build an increasing sequence out of them.  How much space do we need to store the differences?  Well, the differences occur between two values in the input sequence.  So it's O(n<sup>2</sup>) - we can build an n x n table with this data:
+
+```
+   0 1 2 3 ...
+ 0 X 
+ 1 X X   * <-- delta from a[1] to a[3], for example
+ 2 X X X
+ 3 X X X X
+ ... 
+```
+
+The value in row `row` and column `col` represents the delta from `a[row]` to `a[col]`.  The main diagonal and below are illegal/unused values in the table because we cannot move backwards or stay in the same place when generating a subsequence.
+
+Now, we can sketch our algorithm as something like the following.  At position `i`, do:
+ 1) Look at all differences starting at `a[i]`, which corresponds to all values in row `i` of our differences table
+ 2) Find out which sequences they can be appended to, i.e. which sequences we have found already with a last_difference less than the found difference
+ 3) Save these new sequences for future lookup
+
+The only question is how do we store and lookup the sequences we've built?  First, we want to index them by the index of the last value in the sequence, so that as we're checking the next differences from position `i`, we can directly access all relevant sequences.  And for each index, we want to store the last pair difference and length of each sequence that ends at that index.  Recalling that we want to look up all sequences with ending pair differences less than a specified value (the next pair difference), a BST with last pair difference as the key, and length as the associated value, makes sense.  (In terms of time complexity, it's possible in general that all the sequences would be compatible and so we would have to iterate through the whole data structure regardless, but in practice using a BST definitely will be more efficient.)
+
+So let's outline the algorithm more precisely now.
+
+ - Precomputation: generate an n x n table of differences, where the value in the `i`th row and `j`th column represents `a[j] - a[i]`.
+ - Initialize a vector of length equal to the input vector length, in which each value is a BST with last pair difference as the key, and length as the mapped value.
+   - For each index `i` from 1 to n-1, insert the sequence `a[0], a[i]` into the BST as the baseline (we can always go from the first element to any other element).
+   - Note: we're not going to use the BST at index 0, since our BST vector is indexed by last index, and no sequence ends at index 0 (as we're dealing with differences, we must have at least two elements to have a well-defined difference).
+ - For `i` from 1 to n, do:
+   - Look at all differences starting at `a[i]`, which corresponds to all values in row `i` of our differences table
+   - For each difference, find all sequences in the BST at index `i` which have a last difference less than the current difference.
+    - Insert the new sequence in the BST indexed by the current *column* (corresponds to ending value of prior sequence) of the difference table, with length equal to the previous length plus one.
+    - As we go, keep track of the max convex subsequence length found so far, and the BST index at which it's located.
+ - To recover the full sequence from the max length, augment the BST to also store the previous value's index (along with length).  Then we can retrace the path backwards through the BST, starting from the max sequence index we stored above, to build the sequence in reverse.  Reverse this for the final solution.
+
+Complexity Analysis: TODO
 
 ---
 
