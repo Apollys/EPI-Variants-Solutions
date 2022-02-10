@@ -39,6 +39,8 @@ This clearly gives no guarantee of the "slow" and "fast" pointers colliding, sin
 
 Similar to the example of removing duplicates, but you just have to count the number of repetitions before removing an element.
 
+Since requested by a forum user, here is my C++ code for this problem: [remove_duplicates_linked_list_variant.cpp](https://github.com/Apollys/EPI-Variants-Solutions/blob/main/Ch_07_Linked_Lists/remove_duplicates_linked_list_variant.cpp)
+
 ---
 
 **Test whether a double linked list is palindromic**
